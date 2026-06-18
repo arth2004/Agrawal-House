@@ -20,6 +20,25 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Supabase Setup
+
+This app uses Supabase when the project environment variables are present. If they are missing, the app falls back to the local mock database.
+
+1. Create a new Supabase project.
+2. In the Supabase SQL editor, run the schema from `supabase/schema.sql`.
+3. Copy `.env.example` to `.env.local`.
+4. Fill in your real Supabase project URL and anon key from the Supabase dashboard.
+5. Restart the dev server.
+
+Required environment variables:
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=your-project-url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+```
+
+Admin login uses Supabase Auth when configured. Create an email/password user in Supabase Auth for your admin account, then sign in with that account in `/admin/login`.
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:
