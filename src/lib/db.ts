@@ -1,26 +1,38 @@
-import { createClient } from '@supabase/supabase-js';
-import { Room, Booking, BlockedDate, Enquiry, Settings } from './types';
-import { mockDB } from './mockData';
+import { createClient } from "@supabase/supabase-js";
+import { Room, Booking, BlockedDate, Enquiry, Settings } from "./types";
+import { mockDB } from "./mockData";
+import { findBookingConflict } from "./availability";
+
+type BookingWithRoomName = Booking & {
+  rooms?: { name?: string | null } | null;
+};
+
+type SettingRow = {
+  key: string;
+  value: unknown;
+};
 
 // Detect if Supabase is fully configured
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-const isSupabaseConfigured = 
-  supabaseUrl && 
-  supabaseUrl !== 'your-supabase-url' && 
-  supabaseAnonKey && 
-  supabaseAnonKey !== 'your-supabase-anon-key';
+const isSupabaseConfigured =
+  supabaseUrl &&
+  supabaseUrl !== "your-supabase-url" &&
+  supabaseAnonKey &&
+  supabaseAnonKey !== "your-supabase-anon-key";
 
 // Initialize Supabase if configured, otherwise null
-const supabase = isSupabaseConfigured 
+const supabase = isSupabaseConfigured
   ? createClient(supabaseUrl!, supabaseAnonKey!)
   : null;
 
 if (!isSupabaseConfigured) {
-  console.log('Database client: Supabase credentials not found or set to placeholder. Falling back to Local Mock Database.');
+  console.log(
+    "Database client: Supabase credentials not found or set to placeholder. Falling back to Local Mock Database.",
+  );
 } else {
-  console.log('Database client: Supabase successfully initialized.');
+  console.log("Database client: Supabase successfully initialized.");
 }
 
 export const db = {
@@ -30,12 +42,11 @@ export const db = {
   async getRooms(): Promise<Room[]> {
     if (supabase) {
       const { data, error } = await supabase
-        .from('rooms')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .from("rooms")
+        .select("*")
+        .order("created_at", { ascending: false });
       if (error) {
-        console.error('Error fetching rooms from Supabase, falling back to mock:', error);
-        return mockDB.getRooms();
+        throw error;
       }
       return data as Room[];
     }
@@ -45,13 +56,12 @@ export const db = {
   async getRoom(id: string): Promise<Room | undefined> {
     if (supabase) {
       const { data, error } = await supabase
-        .from('rooms')
-        .select('*')
-        .eq('id', id)
+        .from("rooms")
+        .select("*")
+        .eq("id", id)
         .maybeSingle();
       if (error) {
-        console.error(`Error fetching room ${id} from Supabase, falling back to mock:`, error);
-        return mockDB.getRoom(id);
+        throw error;
       }
       return data ? (data as Room) : undefined;
     }
@@ -61,13 +71,12 @@ export const db = {
   async saveRoom(room: Room): Promise<Room> {
     if (supabase) {
       const { data, error } = await supabase
-        .from('rooms')
+        .from("rooms")
         .upsert(room)
         .select()
         .single();
       if (error) {
-        console.error('Error saving room to Supabase, falling back to mock:', error);
-        return mockDB.saveRoom(room);
+        throw error;
       }
       return data as Room;
     }
@@ -77,31 +86,29 @@ export const db = {
   // --- BLOCKED DATES ---
   async getBlockedDates(roomId?: string): Promise<BlockedDate[]> {
     if (supabase) {
-      let query = supabase.from('blocked_dates').select('*');
+      let query = supabase.from("blocked_dates").select("*");
       if (roomId) {
-        query = query.eq('room_id', roomId);
+        query = query.eq("room_id", roomId);
       }
       const { data, error } = await query;
       if (error) {
-        console.error('Error getting blocked dates from Supabase, falling back to mock:', error);
-        return mockDB.getBlockedDates();
+        throw error;
       }
       return data as BlockedDate[];
     }
     const dates = await mockDB.getBlockedDates();
-    return roomId ? dates.filter(d => d.room_id === roomId) : dates;
+    return roomId ? dates.filter((d) => d.room_id === roomId) : dates;
   },
 
-  async addBlockedDate(blocked: Omit<BlockedDate, 'id'>): Promise<BlockedDate> {
+  async addBlockedDate(blocked: Omit<BlockedDate, "id">): Promise<BlockedDate> {
     if (supabase) {
       const { data, error } = await supabase
-        .from('blocked_dates')
+        .from("blocked_dates")
         .insert(blocked)
         .select()
         .single();
       if (error) {
-        console.error('Error blocking date in Supabase, falling back to mock:', error);
-        return mockDB.addBlockedDate(blocked);
+        throw error;
       }
       return data as BlockedDate;
     }
@@ -111,12 +118,11 @@ export const db = {
   async deleteBlockedDate(id: string): Promise<void> {
     if (supabase) {
       const { error } = await supabase
-        .from('blocked_dates')
+        .from("blocked_dates")
         .delete()
-        .eq('id', id);
+        .eq("id", id);
       if (error) {
-        console.error('Error deleting blocked date from Supabase, falling back to mock:', error);
-        return mockDB.deleteBlockedDate(id);
+        throw error;
       }
       return;
     }
@@ -128,30 +134,51 @@ export const db = {
     if (supabase) {
       // In Supabase, do a join or separate fetch for room names
       const { data, error } = await supabase
-        .from('bookings')
-        .select('*, rooms(name)')
-        .order('created_at', { ascending: false });
+        .from("bookings")
+        .select("*, rooms(name)")
+        .order("created_at", { ascending: false });
       if (error) {
-        console.error('Error fetching bookings from Supabase, falling back to mock:', error);
-        return mockDB.getBookings();
+        throw error;
       }
-      return data.map((b: any) => ({
+      return (data as BookingWithRoomName[]).map((b) => ({
         ...b,
-        room_name: b.rooms?.name || 'Unknown Room'
+        room_name: b.rooms?.name || "Unknown Room",
       })) as Booking[];
     }
     return mockDB.getBookings();
   },
 
-  async createBooking(booking: Omit<Booking, 'id' | 'status' | 'payment_status' | 'created_at'>): Promise<Booking> {
+  async createBooking(
+    booking: Omit<Booking, "id" | "status" | "payment_status" | "created_at">,
+  ): Promise<Booking> {
+    const [bookings, blockedDates, settings] = await Promise.all([
+      this.getBookings(),
+      this.getBlockedDates(booking.room_id),
+      this.getSettings(),
+    ]);
+
+    const conflictMessage = findBookingConflict(
+      booking.check_in,
+      booking.check_out,
+      bookings.filter(
+        (existingBooking) => existingBooking.room_id === booking.room_id,
+      ),
+      blockedDates,
+    );
+
+    if (conflictMessage) {
+      throw new Error(conflictMessage);
+    }
+
     if (supabase) {
       // Get settings to decide status
-      const settings = await this.getSettings();
-      const status = settings.booking_mode === 'instant' ? 'confirmed' : 'pending';
-      const payment_status = booking.payment_method === 'online' ? 'paid' : 'unpaid';
+      const status =
+        settings.booking_mode === "instant" ? "confirmed" : "pending";
+      const payment_status =
+        booking.payment_method === "online" ? "paid" : "unpaid";
 
       const { data, error } = await supabase
-        .from('bookings')
+        .from("bookings")
         .insert({
           ...booking,
           status,
@@ -160,28 +187,30 @@ export const db = {
         .select()
         .single();
       if (error) {
-        console.error('Error creating booking in Supabase, falling back to mock:', error);
-        return mockDB.createBooking(booking);
+        throw error;
       }
       return data as Booking;
     }
     return mockDB.createBooking(booking);
   },
 
-  async updateBookingStatus(id: string, status: Booking['status'], payment_status?: Booking['payment_status']): Promise<Booking | undefined> {
+  async updateBookingStatus(
+    id: string,
+    status: Booking["status"],
+    payment_status?: Booking["payment_status"],
+  ): Promise<Booking | undefined> {
     if (supabase) {
       const updates: Partial<Booking> = { status };
       if (payment_status) updates.payment_status = payment_status;
 
       const { data, error } = await supabase
-        .from('bookings')
+        .from("bookings")
         .update(updates)
-        .eq('id', id)
+        .eq("id", id)
         .select()
         .maybeSingle();
       if (error) {
-        console.error('Error updating booking in Supabase, falling back to mock:', error);
-        return mockDB.updateBookingStatus(id, status, payment_status);
+        throw error;
       }
       return data ? (data as Booking) : undefined;
     }
@@ -192,45 +221,47 @@ export const db = {
   async getEnquiries(): Promise<Enquiry[]> {
     if (supabase) {
       const { data, error } = await supabase
-        .from('enquiries')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .from("enquiries")
+        .select("*")
+        .order("created_at", { ascending: false });
       if (error) {
-        console.error('Error getting enquiries from Supabase, falling back to mock:', error);
-        return mockDB.getEnquiries();
+        throw error;
       }
       return data as Enquiry[];
     }
     return mockDB.getEnquiries();
   },
 
-  async createEnquiry(enquiry: Omit<Enquiry, 'id' | 'status' | 'created_at'>): Promise<Enquiry> {
+  async createEnquiry(
+    enquiry: Omit<Enquiry, "id" | "status" | "created_at">,
+  ): Promise<Enquiry> {
     if (supabase) {
       const { data, error } = await supabase
-        .from('enquiries')
+        .from("enquiries")
         .insert(enquiry)
         .select()
         .single();
       if (error) {
-        console.error('Error creating enquiry in Supabase, falling back to mock:', error);
-        return mockDB.createEnquiry(enquiry);
+        throw error;
       }
       return data as Enquiry;
     }
     return mockDB.createEnquiry(enquiry);
   },
 
-  async updateEnquiryStatus(id: string, status: Enquiry['status']): Promise<Enquiry | undefined> {
+  async updateEnquiryStatus(
+    id: string,
+    status: Enquiry["status"],
+  ): Promise<Enquiry | undefined> {
     if (supabase) {
       const { data, error } = await supabase
-        .from('enquiries')
+        .from("enquiries")
         .update({ status })
-        .eq('id', id)
+        .eq("id", id)
         .select()
         .maybeSingle();
       if (error) {
-        console.error('Error updating enquiry in Supabase, falling back to mock:', error);
-        return mockDB.updateEnquiryStatus(id, status);
+        throw error;
       }
       return data ? (data as Enquiry) : undefined;
     }
@@ -240,24 +271,31 @@ export const db = {
   // --- SETTINGS ---
   async getSettings(): Promise<Settings> {
     if (supabase) {
-      const { data, error } = await supabase
-        .from('settings')
-        .select('*');
+      const { data, error } = await supabase.from("settings").select("*");
       if (error) {
-        console.error('Error getting settings from Supabase, falling back to mock:', error);
-        return mockDB.getSettings();
+        throw error;
       }
       // Reconstruct Settings object from keys
       const settingsObj: Partial<Settings> = {};
-      data.forEach((row: any) => {
-        if (row.key === 'booking_mode') settingsObj.booking_mode = row.value;
-        if (row.key === 'payment_options') settingsObj.payment_options = row.value;
-        if (row.key === 'contact_details') settingsObj.contact_details = row.value;
+      (data as SettingRow[]).forEach((row) => {
+        if (row.key === "booking_mode") {
+          settingsObj.booking_mode = row.value as Settings["booking_mode"];
+        }
+        if (row.key === "payment_options") {
+          settingsObj.payment_options =
+            row.value as Settings["payment_options"];
+        }
+        if (row.key === "contact_details") {
+          settingsObj.contact_details =
+            row.value as Settings["contact_details"];
+        }
       });
+      const fallbackSettings = await mockDB.getSettings();
       return {
-        booking_mode: settingsObj.booking_mode || 'manual_approval',
-        payment_options: settingsObj.payment_options || ['at_property'],
-        contact_details: settingsObj.contact_details || mockDB.getSettings().then(s => s.contact_details),
+        booking_mode: settingsObj.booking_mode || "manual_approval",
+        payment_options: settingsObj.payment_options || ["at_property"],
+        contact_details:
+          settingsObj.contact_details || fallbackSettings.contact_details,
       } as Settings;
     }
     return mockDB.getSettings();
@@ -267,19 +305,28 @@ export const db = {
     if (supabase) {
       // Upsert keys in Supabase settings table
       const rows = [
-        { key: 'booking_mode', value: settings.booking_mode, updated_at: new Date().toISOString() },
-        { key: 'payment_options', value: settings.payment_options, updated_at: new Date().toISOString() },
-        { key: 'contact_details', value: settings.contact_details, updated_at: new Date().toISOString() },
+        {
+          key: "booking_mode",
+          value: settings.booking_mode,
+          updated_at: new Date().toISOString(),
+        },
+        {
+          key: "payment_options",
+          value: settings.payment_options,
+          updated_at: new Date().toISOString(),
+        },
+        {
+          key: "contact_details",
+          value: settings.contact_details,
+          updated_at: new Date().toISOString(),
+        },
       ];
-      const { error } = await supabase
-        .from('settings')
-        .upsert(rows);
+      const { error } = await supabase.from("settings").upsert(rows);
       if (error) {
-        console.error('Error saving settings to Supabase, falling back to mock:', error);
-        return mockDB.saveSettings(settings);
+        throw error;
       }
       return settings;
     }
     return mockDB.saveSettings(settings);
-  }
+  },
 };

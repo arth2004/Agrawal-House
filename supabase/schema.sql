@@ -2,6 +2,7 @@
 
 -- Enable UUID extension if not already present
 create extension if not exists "uuid-ossp";
+create extension if not exists btree_gist;
 
 -- 1. Rooms Table
 create table if not exists public.rooms (
@@ -39,6 +40,13 @@ create table if not exists public.blocked_dates (
   constraint check_dates check (start_date <= end_date)
 );
 
+alter table public.blocked_dates
+  add constraint blocked_dates_no_overlap
+  exclude using gist (
+    room_id with =,
+    daterange(start_date, end_date, '[]') with &&
+  );
+
 alter table public.blocked_dates enable row level security;
 
 -- Policy: Everyone can read blocked dates (to check availability)
@@ -69,6 +77,13 @@ create table if not exists public.bookings (
   created_at timestamp with time zone default timezone('utc'::text, now()) not null,
   constraint check_booking_dates check (check_in < check_out)
 );
+
+alter table public.bookings
+  add constraint bookings_no_overlap
+  exclude using gist (
+    room_id with =,
+    daterange(check_in, check_out, '[]') with &&
+  ) where (status in ('pending', 'confirmed'));
 
 alter table public.bookings enable row level security;
 

@@ -236,11 +236,11 @@ export default function PublicLayout({
               </li>
               <li style={{ display: 'flex', alignItems: 'center', gap: '12px', color: '#A8A29E', fontSize: '0.95rem' }}>
                 <Phone size={18} style={{ color: 'var(--primary)', flexShrink: 0 }} />
-                <span>+91 98765 43210</span>
+                <span>+91 7415160134, +91 9425094180</span>
               </li>
               <li style={{ display: 'flex', alignItems: 'center', gap: '12px', color: '#A8A29E', fontSize: '0.95rem' }}>
                 <Mail size={18} style={{ color: 'var(--primary)', flexShrink: 0 }} />
-                <span>stay@agrawalhouse.com</span>
+                <span>agrawalhouse34@gmail.com</span>
               </li>
             </ul>
           </div>
