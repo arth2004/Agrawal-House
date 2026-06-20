@@ -3,7 +3,7 @@ import './globals.css';
 
 export const metadata: Metadata = {
   title: 'Agrawal House | Heritage Homestay',
-  description: 'Experience premium heritage stay at Agrawal House, Indore. Book beautiful rooms and cottages surrounded by nature.',
+  description: 'Experience premium heritage stay at Agrawal House, Ujjain. Book beautiful rooms and cottages surrounded by nature.',
 };
 
 export default function RootLayout({

@@ -67,7 +67,7 @@ export const DEFAULT_SETTINGS: Settings = {
     phone: "+91 98765 43210",
     email: "stay@agrawalhouse.com",
     address:
-      "Agrawal House, Heritage Lane, Near Lal Bagh Palace, Indore, Madhya Pradesh - 452002",
+      "Agrawal House, Heritage Lane, Near Mahakaleshwar Temple, Ujjain, Madhya Pradesh - 452002",
   },
 };
 
