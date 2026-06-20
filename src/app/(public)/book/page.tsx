@@ -28,6 +28,8 @@ function BookingForm() {
   // Room details state
   const [room, setRoom] = useState<Room | null>(null);
   const [loading, setLoading] = useState(true);
+  const [priceBreakdown, setPriceBreakdown] = useState<{ date: string; price: number; rule?: any }[]>([]);
+  const [dynamicTotal, setDynamicTotal] = useState<number>(0);
 
   // Form states
   const [guestName, setGuestName] = useState("");
@@ -77,7 +79,29 @@ function BookingForm() {
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   }, [checkIn, checkOut]);
 
-  const totalPrice = room ? numNights * room.base_price : 0;
+  // Calculate dynamic pricing
+  React.useEffect(() => {
+    const calculatePrice = async () => {
+      if (!room || !checkIn || !checkOut || numNights === 0) {
+        setPriceBreakdown([]);
+        setDynamicTotal(0);
+        return;
+      }
+      try {
+        const result = await db.calculateTotalPrice(room.id, checkIn, checkOut, room.base_price);
+        setPriceBreakdown(result.breakdown);
+        setDynamicTotal(result.total);
+      } catch (err) {
+        console.error("Failed to calculate dynamic price", err);
+        // Fallback to base price
+        setPriceBreakdown([]);
+        setDynamicTotal(room.base_price * numNights);
+      }
+    };
+    calculatePrice();
+  }, [room, checkIn, checkOut, numNights]);
+
+  const totalPrice = dynamicTotal || (room ? numNights * room.base_price : 0);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -106,6 +130,29 @@ function BookingForm() {
       });
 
       setBookingSuccess(result);
+
+      // Send booking notification emails (don't block UI)
+      fetch('/api/send-booking', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          guest_name: guestName,
+          guest_email: guestEmail,
+          guest_phone: guestPhone,
+          room_name: room?.name || 'Room',
+          check_in: checkIn,
+          check_out: checkOut,
+          num_guests: guestsCount,
+          amount_total: totalPrice,
+          status: result.status,
+          notes: notes,
+        }),
+      }).catch((emailError) => {
+        console.error('Failed to send booking email:', emailError);
+        // Don't throw - booking is already saved
+      });
     } catch (err: unknown) {
       console.error(err);
       setError(
@@ -587,22 +634,79 @@ function BookingForm() {
               </div>
             </div>
 
-            {/* Calculations */}
+              {/* Calculations */}
             <div
               style={{ display: "flex", flexDirection: "column", gap: "12px" }}
             >
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  fontSize: "0.95rem",
-                }}
-              >
-                <span>
-                  ₹{room.base_price} x {numNights} nights
-                </span>
-                <span>₹{totalPrice}</span>
-              </div>
+              {priceBreakdown.length > 0 ? (
+                <>
+                  {priceBreakdown.map((item, idx) => (
+                    <div
+                      key={idx}
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        fontSize: "0.9rem",
+                        color: item.rule ? "var(--text-secondary)" : "inherit",
+                      }}
+                    >
+                      <span>
+                        {new Date(item.date).toLocaleDateString("en-IN", {
+                          day: "numeric",
+                          month: "short",
+                        })}
+                        {item.rule && (
+                          <span
+                            style={{
+                              marginLeft: "6px",
+                              fontSize: "0.75rem",
+                              padding: "2px 6px",
+                              borderRadius: "4px",
+                              backgroundColor:
+                                item.rule.price_modifier > 1
+                                  ? "#FEF3C7"
+                                  : "#D1FAE5",
+                              color:
+                                item.rule.price_modifier > 1
+                                  ? "#92400E"
+                                  : "#065F46",
+                            }}
+                          >
+                            {item.rule.name}
+                          </span>
+                        )}
+                      </span>
+                      <span>₹{item.price}</span>
+                    </div>
+                  ))}
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      fontSize: "0.95rem",
+                      borderTop: "1px solid var(--border-color)",
+                      paddingTop: "8px",
+                      marginTop: "4px",
+                    }}
+                  >
+                    <span>Subtotal</span>
+                    <span>₹{totalPrice}</span>
+                  </div>
+                </>
+              ) : (
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    fontSize: "0.95rem",
+                  }}
+                >
+                  <span>
+                    ₹{room.base_price} x {numNights} nights
+                  </span>
+                  <span>₹{totalPrice}</span>
+                </div>
+              )}
               <div
                 style={{
                   display: "flex",

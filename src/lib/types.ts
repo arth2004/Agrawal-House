@@ -47,6 +47,18 @@ export interface Enquiry {
   created_at?: string;
 }
 
+export interface PricingRule {
+  id: string;
+  room_id: string;
+  name: string;
+  start_date: string; // YYYY-MM-DD
+  end_date: string; // YYYY-MM-DD
+  price_modifier: number; // multiplier on base_price
+  priority: number;
+  is_active: boolean;
+  created_at?: string;
+}
+
 export interface Settings {
   booking_mode: 'instant' | 'manual_approval';
   payment_options: ('online' | 'at_property')[];

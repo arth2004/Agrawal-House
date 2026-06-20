@@ -24,11 +24,26 @@ export default function EnquiryPage() {
     setError('');
 
     try {
+      // Save enquiry to database
       await db.createEnquiry({
         name,
         contact,
         message,
       });
+
+      // Send email notification
+      const emailResponse = await fetch('/api/send-enquiry', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name, contact, message }),
+      });
+
+      if (!emailResponse.ok) {
+        console.error('Failed to send email notification');
+        // Don't throw error - enquiry is still saved in DB
+      }
 
       // Show success
       setSubmitted(true);

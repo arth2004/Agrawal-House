@@ -1,4 +1,4 @@
-import { Room, Booking, BlockedDate, Enquiry, Settings } from "./types";
+import { Room, Booking, BlockedDate, Enquiry, Settings, PricingRule } from "./types";
 import { findBookingConflict } from "./availability";
 
 // Default mock database state
@@ -77,6 +77,7 @@ type MockDbState = {
   bookings: Booking[];
   enquiries: Enquiry[];
   settings: Settings;
+  pricingRules: PricingRule[];
 };
 
 const STORAGE_KEYS = {
@@ -93,6 +94,7 @@ const createDefaultState = (): MockDbState => ({
   bookings: [],
   enquiries: [],
   settings: { ...DEFAULT_SETTINGS },
+  pricingRules: [],
 });
 
 // In-Memory state for Server Side rendering mock database
@@ -102,6 +104,7 @@ class MockDB {
   private bookings: Booking[] = [];
   private enquiries: Enquiry[] = [];
   private settings: Settings = { ...DEFAULT_SETTINGS };
+  private pricingRules: PricingRule[] = [];
 
   constructor() {
     const defaults = createDefaultState();
@@ -110,6 +113,7 @@ class MockDB {
     this.bookings = defaults.bookings;
     this.enquiries = defaults.enquiries;
     this.settings = defaults.settings;
+    this.pricingRules = defaults.pricingRules;
   }
 
   private isBrowser() {
@@ -123,6 +127,7 @@ class MockDB {
       bookings: this.bookings,
       enquiries: this.enquiries,
       settings: this.settings,
+      pricingRules: this.pricingRules,
     };
   }
 
@@ -132,6 +137,7 @@ class MockDB {
     this.bookings = state.bookings;
     this.enquiries = state.enquiries;
     this.settings = state.settings;
+    this.pricingRules = state.pricingRules;
   }
 
   private async loadState() {
@@ -142,6 +148,7 @@ class MockDB {
         const storedBookings = localStorage.getItem(STORAGE_KEYS.bookings);
         const storedEnquiries = localStorage.getItem(STORAGE_KEYS.enquiries);
         const storedSettings = localStorage.getItem(STORAGE_KEYS.settings);
+        const storedPricingRules = localStorage.getItem("ah_pricing_rules");
 
         this.rooms = storedRooms ? JSON.parse(storedRooms) : [...DEFAULT_ROOMS];
         this.blockedDates = storedBlocked ? JSON.parse(storedBlocked) : [];
@@ -150,6 +157,9 @@ class MockDB {
         this.settings = storedSettings
           ? JSON.parse(storedSettings)
           : { ...DEFAULT_SETTINGS };
+        this.pricingRules = storedPricingRules
+          ? JSON.parse(storedPricingRules)
+          : [];
       } catch (e) {
         console.error("Error loading mock db from localStorage", e);
       }
@@ -167,6 +177,7 @@ class MockDB {
         bookings: parsed.bookings ?? [],
         enquiries: parsed.enquiries ?? [],
         settings: parsed.settings ?? { ...DEFAULT_SETTINGS },
+        pricingRules: parsed.pricingRules ?? [],
       });
     } catch (e) {
       const defaults = createDefaultState();
@@ -193,6 +204,10 @@ class MockDB {
         localStorage.setItem(
           STORAGE_KEYS.settings,
           JSON.stringify(this.settings),
+        );
+        localStorage.setItem(
+          "ah_pricing_rules",
+          JSON.stringify(this.pricingRules),
         );
       } catch (e) {
         console.error("Error saving mock db to localStorage", e);
@@ -354,6 +369,63 @@ class MockDB {
       return this.enquiries[index];
     }
     return undefined;
+  }
+
+  // Pricing Rules
+  async getPricingRules(): Promise<PricingRule[]> {
+    await this.loadState();
+    return this.pricingRules;
+  }
+
+  async getPricingRuleForDate(
+    roomId: string,
+    date: string,
+  ): Promise<PricingRule | undefined> {
+    await this.loadState();
+    return this.pricingRules
+      .filter(
+        (r) =>
+          r.room_id === roomId &&
+          r.is_active &&
+          r.start_date <= date &&
+          r.end_date >= date,
+      )
+      .sort((a, b) => b.priority - a.priority)[0];
+  }
+
+  async addPricingRule(rule: Omit<PricingRule, "id">): Promise<PricingRule> {
+    await this.loadState();
+    const newRule: PricingRule = {
+      ...rule,
+      id: `pricing-${Math.random().toString(36).substr(2, 9)}`,
+      created_at: new Date().toISOString(),
+    };
+    this.pricingRules.push(newRule);
+    await this.saveState();
+    return newRule;
+  }
+
+  async updatePricingRule(
+    id: string,
+    updates: Partial<Omit<PricingRule, "id">>,
+  ): Promise<PricingRule | undefined> {
+    await this.loadState();
+    const index = this.pricingRules.findIndex((r) => r.id === id);
+    if (index >= 0) {
+      this.pricingRules[index] = {
+        ...this.pricingRules[index],
+        ...updates,
+      };
+      await this.saveState();
+      return this.pricingRules[index];
+    }
+    return undefined;
+  }
+
+  async deletePricingRule(id: string): Promise<void> {
+    await this.loadState();
+    this.pricingRules = this.pricingRules.filter((r) => r.id !== id);
+    await this.saveState();
   }
 
   // Settings

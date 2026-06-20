@@ -110,7 +110,7 @@ export default async function HomePage() {
               }}
             />
             <div
-              className="glassmorphism"
+              className="glassmorphism hide-mobile-floating"
               style={{
                 position: 'absolute',
                 bottom: '-24px',
@@ -122,7 +122,6 @@ export default async function HomePage() {
                 border: '1px solid var(--border-color)',
                 boxShadow: 'var(--shadow-md)',
               }}
-              className="hide-mobile-floating"
             >
               <Sparkles size={24} style={{ color: 'var(--accent)', marginBottom: '8px' }} />
               <h4 style={{ fontSize: '1.1rem', marginBottom: '4px' }}>Genuine Hospitality</h4>

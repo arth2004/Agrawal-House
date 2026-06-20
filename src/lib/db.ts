@@ -1,5 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
-import { Room, Booking, BlockedDate, Enquiry, Settings } from "./types";
+import { Room, Booking, BlockedDate, Enquiry, Settings, PricingRule } from "./types";
 import { mockDB } from "./mockData";
 import { findBookingConflict } from "./availability";
 
@@ -266,6 +266,136 @@ export const db = {
       return data ? (data as Enquiry) : undefined;
     }
     return mockDB.updateEnquiryStatus(id, status);
+  },
+
+  // --- PRICING RULES ---
+  async getPricingRules(roomId?: string): Promise<PricingRule[]> {
+    if (supabase) {
+      let query = supabase.from("pricing_rules").select("*");
+      if (roomId) {
+        query = query.eq("room_id", roomId);
+      }
+      const { data, error } = await query;
+      if (error) {
+        throw error;
+      }
+      return data as PricingRule[];
+    }
+    const rules = await mockDB.getPricingRules();
+    return roomId ? rules.filter((r) => r.room_id === roomId) : rules;
+  },
+
+  async getPricingRuleForDate(
+    roomId: string,
+    date: string,
+  ): Promise<PricingRule | undefined> {
+    if (supabase) {
+      const { data, error } = await supabase
+        .from("pricing_rules")
+        .select("*")
+        .eq("room_id", roomId)
+        .eq("is_active", true)
+        .lte("start_date", date)
+        .gte("end_date", date)
+        .order("priority", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (error) {
+        throw error;
+      }
+      return data ? (data as PricingRule) : undefined;
+    }
+    return mockDB.getPricingRuleForDate(roomId, date);
+  },
+
+  async calculateTotalPrice(
+    roomId: string,
+    checkIn: string,
+    checkOut: string,
+    basePrice: number,
+  ): Promise<{ total: number; breakdown: { date: string; price: number; rule?: PricingRule }[] }> {
+    const rules = await this.getPricingRules(roomId);
+    const start = new Date(checkIn);
+    const end = new Date(checkOut);
+    const breakdown: { date: string; price: number; rule?: PricingRule }[] = [];
+    let total = 0;
+
+    for (let d = new Date(start); d < end; d.setDate(d.getDate() + 1)) {
+      const dateStr = d.toISOString().split("T")[0];
+      const applicableRule = rules
+        .filter(
+          (r) =>
+            r.is_active &&
+            r.start_date <= dateStr &&
+            r.end_date >= dateStr,
+        )
+        .sort((a, b) => b.priority - a.priority)[0];
+
+      const price = applicableRule
+        ? Math.round(basePrice * applicableRule.price_modifier)
+        : basePrice;
+
+      breakdown.push({
+        date: dateStr,
+        price,
+        rule: applicableRule,
+      });
+      total += price;
+    }
+
+    return { total, breakdown };
+  },
+
+  async addPricingRule(rule: Omit<PricingRule, "id">): Promise<PricingRule> {
+    if (supabase) {
+      const { data, error } = await supabase
+        .from("pricing_rules")
+        .insert(rule)
+        .select()
+        .single();
+      if (error) {
+        throw error;
+      }
+      return data as PricingRule;
+    }
+    return mockDB.addPricingRule(rule);
+  },
+
+  async updatePricingRule(
+    id: string,
+    updates: Partial<Omit<PricingRule, "id">>,
+  ): Promise<PricingRule> {
+    if (supabase) {
+      const { data, error } = await supabase
+        .from("pricing_rules")
+        .update(updates)
+        .eq("id", id)
+        .select()
+        .single();
+      if (error) {
+        throw error;
+      }
+      return data as PricingRule;
+    }
+    const updated = await mockDB.updatePricingRule(id, updates);
+    if (!updated) {
+      throw new Error("Pricing rule not found");
+    }
+    return updated;
+  },
+
+  async deletePricingRule(id: string): Promise<void> {
+    if (supabase) {
+      const { error } = await supabase
+        .from("pricing_rules")
+        .delete()
+        .eq("id", id);
+      if (error) {
+        throw error;
+      }
+      return;
+    }
+    return mockDB.deletePricingRule(id);
   },
 
   // --- SETTINGS ---

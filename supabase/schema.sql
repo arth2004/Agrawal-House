@@ -100,7 +100,33 @@ create policy "Allow admins full control of bookings" on public.bookings
   for all using (auth.role() = 'service_role' or auth.uid() is not null);
 
 
--- 4. Enquiries Table
+-- 4. Pricing Rules Table
+create table if not exists public.pricing_rules (
+  id uuid default gen_random_uuid() primary key,
+  room_id uuid references public.rooms(id) on delete cascade not null,
+  name text not null,
+  start_date date not null,
+  end_date date not null,
+  price_modifier numeric not null default 1.0, -- multiplier on base_price (e.g., 1.5 = 50% increase, 0.8 = 20% discount)
+  priority integer not null default 0, -- higher priority rules take precedence
+  is_active boolean not null default true,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  constraint check_pricing_dates check (start_date <= end_date),
+  constraint check_price_modifier check (price_modifier > 0)
+);
+
+alter table public.pricing_rules enable row level security;
+
+-- Policy: Everyone can read active pricing rules
+create policy "Allow public read of pricing rules" on public.pricing_rules
+  for select using (is_active = true);
+
+-- Policy: Admins can do everything
+create policy "Allow admins full control of pricing rules" on public.pricing_rules
+  for all using (auth.role() = 'service_role' or auth.uid() is not null);
+
+
+-- 5. Enquiries Table
 create table if not exists public.enquiries (
   id uuid default gen_random_uuid() primary key,
   name text not null,
@@ -121,7 +147,7 @@ create policy "Allow admins full control of enquiries" on public.enquiries
   for all using (auth.role() = 'service_role' or auth.uid() is not null);
 
 
--- 5. Settings Table
+-- 6. Settings Table
 create table if not exists public.settings (
   key text primary key,
   value jsonb not null,
