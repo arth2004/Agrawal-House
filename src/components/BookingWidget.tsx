@@ -4,9 +4,11 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Calendar, Users, ArrowRight, AlertCircle, CheckCircle } from 'lucide-react';
 import { BlockedDate, Booking } from '@/lib/types';
+import WhatsAppBookButton from '@/components/WhatsAppBookButton';
 
 interface BookingWidgetProps {
   roomId: string;
+  roomName: string;
   basePrice: number;
   maxGuests: number;
   blockedDates: BlockedDate[];
@@ -15,6 +17,7 @@ interface BookingWidgetProps {
 
 export default function BookingWidget({
   roomId,
+  roomName,
   basePrice,
   maxGuests,
   blockedDates,
@@ -269,6 +272,16 @@ export default function BookingWidget({
             >
               Book Reservation <ArrowRight size={16} />
             </button>
+            <WhatsAppBookButton
+              details={{
+                roomName,
+                checkIn,
+                checkOut,
+                guests,
+                nights: numNights,
+                totalPrice,
+              }}
+            />
           </div>
         ) : (
           <button
@@ -281,6 +294,33 @@ export default function BookingWidget({
           </button>
         )}
       </form>
+
+      {availabilityStatus !== 'available' && (
+        <div
+          style={{
+            marginTop: '20px',
+            paddingTop: '20px',
+            borderTop: '1px solid var(--border-color)',
+            textAlign: 'center',
+          }}
+        >
+          <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '12px' }}>
+            Prefer to chat? Enquire on WhatsApp
+          </p>
+          <WhatsAppBookButton
+            details={{
+              roomName,
+              checkIn: checkIn || undefined,
+              checkOut: checkOut || undefined,
+              guests: checkIn && checkOut ? guests : undefined,
+              nights: numNights || undefined,
+              totalPrice: numNights > 0 ? totalPrice : undefined,
+            }}
+            label="Enquire on WhatsApp"
+            variant="outline"
+          />
+        </div>
+      )}
     </div>
   );
 }

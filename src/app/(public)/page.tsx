@@ -8,7 +8,18 @@ import {
   Sparkles,
   Users,
   ArrowRight,
+  Award,
 } from "lucide-react";
+
+const TOURISM_CERT = {
+  imageUrl: "/Cert_HMUJN2506940_20250801053615_Digi_page-0001.jpg",
+  registrationNo: "HM/UJN/2025979",
+  category: "Silver",
+  validTill: "31 Jul 2028",
+  scheme:
+    "Madhya Pradesh Home Stay Establishment (Registration and Regulation) Scheme 2010 (revised 2018)",
+  department: "Department of Tourism, Government of Madhya Pradesh",
+} as const;
 
 export const revalidate = 0; // Disable caching to ensure fresh DB state
 
@@ -228,6 +239,181 @@ export default async function HomePage() {
                 Rated 4.9/5 by over 350 guests from across India.
               </p>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* MP Tourism Certification */}
+      <section className="container">
+        <div
+          className="card"
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+            gap: "40px",
+            alignItems: "center",
+            padding: "40px",
+            backgroundColor: "#FFFFFF",
+            border: "1px solid var(--border-color)",
+            boxShadow: "var(--shadow-md)",
+            overflow: "hidden",
+            position: "relative",
+          }}
+        >
+          <div
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              height: "4px",
+              background:
+                "linear-gradient(90deg, var(--primary), var(--accent), var(--secondary))",
+            }}
+          />
+
+          <div>
+            <div
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "8px",
+                padding: "8px 14px",
+                backgroundColor: "var(--primary-light)",
+                color: "var(--primary)",
+                borderRadius: "999px",
+                fontSize: "0.8rem",
+                fontWeight: "700",
+                textTransform: "uppercase",
+                letterSpacing: "0.08em",
+                marginBottom: "16px",
+              }}
+            >
+              <Award size={16} />
+              Government Certified
+            </div>
+
+            <h2
+              style={{
+                fontSize: "clamp(1.8rem, 4vw, 2.2rem)",
+                marginBottom: "12px",
+                lineHeight: "1.25",
+              }}
+            >
+              Registered with Madhya Pradesh Tourism
+            </h2>
+
+            <p
+              style={{
+                color: "var(--text-secondary)",
+                lineHeight: "1.7",
+                fontSize: "1rem",
+                marginBottom: "24px",
+              }}
+            >
+              Agrawal House is officially registered under the{" "}
+              {TOURISM_CERT.scheme}, administered by the{" "}
+              {TOURISM_CERT.department}.
+            </p>
+
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
+                gap: "16px",
+              }}
+            >
+              <div
+                style={{
+                  padding: "16px",
+                  backgroundColor: "var(--bg-secondary)",
+                  borderRadius: "var(--radius-sm)",
+                }}
+              >
+                <span
+                  style={{
+                    display: "block",
+                    fontSize: "0.75rem",
+                    color: "var(--text-muted)",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.06em",
+                    marginBottom: "6px",
+                  }}
+                >
+                  Category
+                </span>
+                <strong style={{ fontSize: "1.1rem", color: "var(--primary)" }}>
+                  {TOURISM_CERT.category}
+                </strong>
+              </div>
+              <div
+                style={{
+                  padding: "16px",
+                  backgroundColor: "var(--bg-secondary)",
+                  borderRadius: "var(--radius-sm)",
+                }}
+              >
+                <span
+                  style={{
+                    display: "block",
+                    fontSize: "0.75rem",
+                    color: "var(--text-muted)",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.06em",
+                    marginBottom: "6px",
+                  }}
+                >
+                  Registration No.
+                </span>
+                <strong style={{ fontSize: "1rem" }}>
+                  {TOURISM_CERT.registrationNo}
+                </strong>
+              </div>
+              <div
+                style={{
+                  padding: "16px",
+                  backgroundColor: "var(--bg-secondary)",
+                  borderRadius: "var(--radius-sm)",
+                }}
+              >
+                <span
+                  style={{
+                    display: "block",
+                    fontSize: "0.75rem",
+                    color: "var(--text-muted)",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.06em",
+                    marginBottom: "6px",
+                  }}
+                >
+                  Valid Till
+                </span>
+                <strong style={{ fontSize: "1rem" }}>
+                  {TOURISM_CERT.validTill}
+                </strong>
+              </div>
+            </div>
+          </div>
+
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <img
+              src={TOURISM_CERT.imageUrl}
+              alt="Madhya Pradesh Tourism Homestay Registration Certificate — Agrawal House"
+              style={{
+                width: "100%",
+                maxWidth: "420px",
+                height: "auto",
+                borderRadius: "var(--radius-md)",
+                border: "1px solid var(--border-color)",
+                boxShadow: "var(--shadow-lg)",
+              }}
+            />
           </div>
         </div>
       </section>
@@ -473,7 +659,7 @@ export default async function HomePage() {
                 }}
               >
                 <img
-                  src={room.photos[0] || "/images/room_mango_suite.jpg"}
+                  src={room.photos[0] || "/images/Front New.jpeg"}
                   alt={room.name}
                   style={{
                     width: "100%",

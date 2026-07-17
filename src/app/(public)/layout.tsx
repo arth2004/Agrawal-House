@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Menu, X, Phone, Mail, MapPin, Calendar } from 'lucide-react';
+import WhatsAppFloat from '@/components/WhatsAppFloat';
 
 export default function PublicLayout({
   children,
@@ -265,6 +266,8 @@ export default function PublicLayout({
           <p>Handcrafted for luxury stay experiences.</p>
         </div>
       </footer>
+
+      <WhatsAppFloat />
 
       {/* Injecting CSS media queries dynamically to keep things simple and fully inline-styled responsive */}
       <style jsx global>{`

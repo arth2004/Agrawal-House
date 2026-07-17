@@ -4,60 +4,37 @@ import { findBookingConflict } from "./availability";
 // Default mock database state
 export const DEFAULT_ROOMS: Room[] = [
   {
-    id: "room-mango-suite",
-    name: "Mango Orchard Suite",
-    description:
-      "A spacious heritage suite overlooking the lush mango orchards. Features high ceilings, handcrafted teakwood furniture, a luxurious king bed, and a private verandah to enjoy your morning tea.",
-    max_guests: 3,
-    base_price: 5500,
+    id: "room-family",
+    name: "Family Room",
+    description: "A spacious heritage room designed for family comfort. Styled with local aesthetics, it features high ceilings, comfortable bedding, and modern private washrooms.",
+    max_guests: 4,
+    base_price: 3500,
     amenities: [
       "Air Conditioning",
       "High-Speed Wi-Fi",
-      "King Bed",
-      "Verandah",
       "Geyser",
       "Tea/Coffee Maker",
-      "Mini Fridge",
+      "Spacious Bath",
     ],
-    photos: ["/images/room_mango_suite.jpg"],
+    photos: ["/images/bed-3a (3).jpg"],
     status: "active",
   },
   {
-    id: "room-courtyard",
-    name: "The Courtyard Room",
-    description:
-      "A warm and vibrant room opening directly into the central heritage courtyard. Decorated with local artwork, it offers a plush queen-sized bed, ambient lighting, and access to the shared courtyard swing.",
+    id: "room-double",
+    name: "Double Room",
+    description: "A warm, elegantly decorated room ideal for couples or solo travelers. Features a plush double bed, ambient traditional lighting, and an attached modern bathroom.",
     max_guests: 2,
-    base_price: 3800,
+    base_price: 2500,
     amenities: [
       "Air Conditioning",
       "High-Speed Wi-Fi",
-      "Queen Bed",
-      "Courtyard View",
       "Geyser",
-      "Work Desk",
+      "Queen Bed",
+      "Private Bath",
     ],
-    photos: ["/images/room_courtyard.jpg"],
+    photos: ["/images/bed-1a.jpg"],
     status: "active",
-  },
-  {
-    id: "room-terracotta-cottage",
-    name: "Terracotta Cottage",
-    description:
-      "An independent rustic cottage built using local clay terracotta tiles and sustainable materials. Features a private glass balcony with panoramic valley views, a workspace, and an open-sky shower experience.",
-    max_guests: 2,
-    base_price: 4500,
-    amenities: [
-      "Air Conditioning",
-      "High-Speed Wi-Fi",
-      "King Bed",
-      "Private Balcony",
-      "Outdoor Shower",
-      "Work Desk",
-    ],
-    photos: ["/images/room_terracotta_cottage.jpg"],
-    status: "active",
-  },
+  }
 ];
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -150,9 +127,29 @@ class MockDB {
         const storedSettings = localStorage.getItem(STORAGE_KEYS.settings);
         const storedPricingRules = localStorage.getItem("ah_pricing_rules");
 
-        this.rooms = storedRooms ? JSON.parse(storedRooms) : [...DEFAULT_ROOMS];
-        this.blockedDates = storedBlocked ? JSON.parse(storedBlocked) : [];
-        this.bookings = storedBookings ? JSON.parse(storedBookings) : [];
+        const parsedRooms = storedRooms ? JSON.parse(storedRooms) : null;
+        if (parsedRooms) {
+          const hasOldRooms = parsedRooms.some((r: any) => 
+            r.id === 'room-mango-suite' || 
+            r.id === 'room-terracotta-cottage' || 
+            r.id === 'room-courtyard'
+          );
+          if (hasOldRooms) {
+            this.rooms = [...DEFAULT_ROOMS];
+            this.blockedDates = [];
+            this.bookings = [];
+            this.saveState();
+          } else {
+            this.rooms = parsedRooms;
+            this.blockedDates = storedBlocked ? JSON.parse(storedBlocked) : [];
+            this.bookings = storedBookings ? JSON.parse(storedBookings) : [];
+          }
+        } else {
+          this.rooms = [...DEFAULT_ROOMS];
+          this.blockedDates = storedBlocked ? JSON.parse(storedBlocked) : [];
+          this.bookings = storedBookings ? JSON.parse(storedBookings) : [];
+        }
+
         this.enquiries = storedEnquiries ? JSON.parse(storedEnquiries) : [];
         this.settings = storedSettings
           ? JSON.parse(storedSettings)
@@ -171,14 +168,33 @@ class MockDB {
       const filePath = `${process.cwd()}/.mock-db.json`;
       const raw = await fs.readFile(filePath, "utf8");
       const parsed = JSON.parse(raw) as Partial<MockDbState>;
-      this.applyState({
-        rooms: parsed.rooms ?? [...DEFAULT_ROOMS],
-        blockedDates: parsed.blockedDates ?? [],
-        bookings: parsed.bookings ?? [],
-        enquiries: parsed.enquiries ?? [],
-        settings: parsed.settings ?? { ...DEFAULT_SETTINGS },
-        pricingRules: parsed.pricingRules ?? [],
-      });
+      
+      const hasOldRooms = parsed.rooms?.some((r: any) => 
+        r.id === 'room-mango-suite' || 
+        r.id === 'room-terracotta-cottage' || 
+        r.id === 'room-courtyard'
+      );
+
+      if (hasOldRooms) {
+        this.applyState({
+          rooms: [...DEFAULT_ROOMS],
+          blockedDates: [],
+          bookings: [],
+          enquiries: parsed.enquiries ?? [],
+          settings: parsed.settings ?? { ...DEFAULT_SETTINGS },
+          pricingRules: parsed.pricingRules ?? [],
+        });
+        await this.saveState();
+      } else {
+        this.applyState({
+          rooms: parsed.rooms ?? [...DEFAULT_ROOMS],
+          blockedDates: parsed.blockedDates ?? [],
+          bookings: parsed.bookings ?? [],
+          enquiries: parsed.enquiries ?? [],
+          settings: parsed.settings ?? { ...DEFAULT_SETTINGS },
+          pricingRules: parsed.pricingRules ?? [],
+        });
+      }
     } catch (e) {
       const defaults = createDefaultState();
       this.applyState(defaults);

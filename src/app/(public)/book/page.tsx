@@ -14,6 +14,7 @@ import {
   FileText,
   CheckCircle2,
 } from "lucide-react";
+import WhatsAppBookButton from "@/components/WhatsAppBookButton";
 
 function BookingForm() {
   const searchParams = useSearchParams();
@@ -517,6 +518,45 @@ function BookingForm() {
               ? "Processing Booking..."
               : "Complete Booking Request"}
           </button>
+
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "12px",
+              margin: "8px 0",
+            }}
+          >
+            <div style={{ flex: 1, height: "1px", backgroundColor: "var(--border-color)" }} />
+            <span style={{ fontSize: "0.8rem", color: "var(--text-muted)", fontWeight: "600" }}>OR</span>
+            <div style={{ flex: 1, height: "1px", backgroundColor: "var(--border-color)" }} />
+          </div>
+
+          <WhatsAppBookButton
+            details={{
+              roomName: room?.name,
+              checkIn,
+              checkOut,
+              guests: guestsCount,
+              nights: numNights,
+              totalPrice,
+              guestName: guestName || undefined,
+              guestPhone: guestPhone || undefined,
+              guestEmail: guestEmail || undefined,
+              notes: notes || undefined,
+            }}
+            variant="primary"
+          />
+          <p
+            style={{
+              fontSize: "0.8rem",
+              color: "var(--text-muted)",
+              textAlign: "center",
+              lineHeight: "1.5",
+            }}
+          >
+            Opens WhatsApp with your booking details pre-filled. Our team will confirm your stay.
+          </p>
         </form>
       </div>
 
@@ -740,6 +780,24 @@ function BookingForm() {
               <span>
                 We protect your stay details. No payment is required right now.
               </span>
+            </div>
+
+            <div style={{ marginTop: "20px" }}>
+              <WhatsAppBookButton
+                details={{
+                  roomName: room.name,
+                  checkIn,
+                  checkOut,
+                  guests: guestsCount,
+                  nights: numNights,
+                  totalPrice,
+                  guestName: guestName || undefined,
+                  guestPhone: guestPhone || undefined,
+                  guestEmail: guestEmail || undefined,
+                  notes: notes || undefined,
+                }}
+                label="Book via WhatsApp"
+              />
             </div>
           </div>
         )}
