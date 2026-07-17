@@ -63,7 +63,7 @@ export default function ChatbotWidget() {
     }
 
     if (cleanQuery.includes('parking') || cleanQuery.includes('car') || cleanQuery.includes('bike') || cleanQuery.includes('vehicle')) {
-      return 'Yes! We have private, secure gated parking facilities available free of charge for our guests, so your vehicle remains safe.';
+      return 'We do not have any parking facilities available at the property. But you can park your vehicle at the nearby parking area which is a government parking area just 400 meters away.';
     }
 
     if (cleanQuery.includes('check-in') || cleanQuery.includes('check-out') || cleanQuery.includes('timings') || cleanQuery.includes('time') || cleanQuery.includes('checkin') || cleanQuery.includes('checkout')) {
@@ -79,7 +79,7 @@ export default function ChatbotWidget() {
     }
 
     if (cleanQuery.includes('breakfast') || cleanQuery.includes('food') || cleanQuery.includes('eat') || cleanQuery.includes('meal')) {
-      return 'A fresh Indori breakfast (Poha, Jalebi, tea/coffee) can be arranged for our guests. There are also several excellent vegetarian restaurants and local eateries right around Patni Bazar, just a short walk away.';
+      return 'There are several excellent vegetarian restaurants and local eateries right around Patni Bazar, just a short walk away.';
     }
 
     if (cleanQuery.includes('book') || cleanQuery.includes('confirm') || cleanQuery.includes('reserve') || cleanQuery.includes('pay') || cleanQuery.includes('payment')) {
@@ -90,8 +90,12 @@ export default function ChatbotWidget() {
       return 'Namaste! How can I assist you with your stay or booking queries for Agrawal House Ujjain today?';
     }
 
+    if (cleanQuery.includes('thanks') || cleanQuery.includes('thank you') || cleanQuery.includes('ok') || cleanQuery.includes('bye')) {
+      return 'You are welcome! Thank you for using our chatbot. If you have any other questions, feel free to ask.';
+    }
+
     // Default fallback
-    return "I want to make sure you get the best information. You can reach out directly to the host, Amit Agrawal, at +91 7415160134 or submit an enquiry on our Enquiry page, and we will get back to you immediately!";
+    return "I want to make sure you get the best information. You can reach out directly to the host, Pankaj Agrawal, at +91 7415160134 or submit an enquiry on our Enquiry page, and we will get back to you immediately!";
   };
 
   return (
