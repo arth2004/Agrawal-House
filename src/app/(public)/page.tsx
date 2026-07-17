@@ -9,6 +9,8 @@ import {
   Users,
   ArrowRight,
   Award,
+  Star,
+  ExternalLink,
 } from "lucide-react";
 
 const TOURISM_CERT = {
@@ -90,7 +92,9 @@ export default async function HomePage() {
               lineHeight: "1.6",
             }}
           >
-            Situated in the heart of Ujjain, Agrawal House combines modern comfort with traditional hospitality, offering guests convenient access to the city's spiritual landmarks and cultural attractions.
+            Situated in the heart of Ujjain, Agrawal House combines modern
+            comfort with traditional hospitality, offering guests convenient
+            access to the city's spiritual landmarks and cultural attractions.
           </p>
           <div
             style={{
@@ -478,7 +482,8 @@ export default async function HomePage() {
                   lineHeight: "1.6",
                 }}
               >
-                Enjoy Ujjain's local flavors with popular restaurants, cafés, and eateries just minutes from our homestay.
+                Enjoy Ujjain's local flavors with popular restaurants, cafés,
+                and eateries just minutes from our homestay.
               </p>
             </div>
 
@@ -750,6 +755,412 @@ export default async function HomePage() {
               </div>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* 5. Google Reviews Section */}
+      <section className="container" style={{ marginTop: "40px" }}>
+        <div style={{ textAlign: "center", marginBottom: "48px" }}>
+          <span
+            style={{
+              color: "var(--primary)",
+              fontWeight: "600",
+              textTransform: "uppercase",
+              letterSpacing: "0.1em",
+              fontSize: "0.85rem",
+            }}
+          >
+            Guest Experiences
+          </span>
+          <h2
+            style={{
+              fontSize: "2.5rem",
+              marginTop: "8px",
+              marginBottom: "16px",
+              lineHeight: "1.2",
+            }}
+          >
+            Loved by Pilgrims & Families
+          </h2>
+
+          {/* Google Business Rating Card */}
+          <div
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "12px",
+              backgroundColor: "var(--bg-secondary)",
+              padding: "10px 20px",
+              borderRadius: "var(--radius-full)",
+              border: "1px solid var(--border-color)",
+              marginTop: "8px",
+            }}
+          >
+            <span style={{ fontWeight: "700", fontSize: "1.05rem" }}>
+              <span style={{ color: "#4285F4" }}>G</span>
+              <span style={{ color: "#EA4335" }}>o</span>
+              <span style={{ color: "#FBBC05" }}>o</span>
+              <span style={{ color: "#4285F4" }}>g</span>
+              <span style={{ color: "#34A853" }}>l</span>
+              <span style={{ color: "#EA4335" }}>e</span>
+            </span>
+            <span style={{ color: "var(--text-muted)" }}>|</span>
+            <div style={{ display: "flex", gap: "2px" }}>
+              {[1, 2, 3, 4, 5].map((s) => (
+                <Star key={s} size={16} fill="#FBBC05" color="#FBBC05" />
+              ))}
+            </div>
+            <strong style={{ color: "var(--text-primary)" }}>4.9 / 5</strong>
+            <span
+              style={{ fontSize: "0.85rem", color: "var(--text-secondary)" }}
+            >
+              (350+ reviews)
+            </span>
+          </div>
+        </div>
+
+        {/* Reviews Grid */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+            gap: "32px",
+            marginBottom: "40px",
+          }}
+        >
+          {/* Review 1 */}
+          <div
+            className="card"
+            style={{
+              padding: "32px",
+              backgroundColor: "#FFFFFF",
+              border: "1px solid var(--border-color)",
+              boxShadow: "var(--shadow-sm)",
+              display: "flex",
+              flexDirection: "column",
+              gap: "16px",
+              borderRadius: "var(--radius-md)",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+              <div
+                style={{
+                  width: "44px",
+                  height: "44px",
+                  borderRadius: "50%",
+                  backgroundColor: "#E0F2FE",
+                  color: "#0369A1",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontWeight: "700",
+                  fontSize: "1.1rem",
+                }}
+              >
+                S
+              </div>
+              <div>
+                <h4 style={{ fontWeight: "700", fontSize: "0.95rem" }}>
+                  Sharayu Ayyangar
+                </h4>
+                <div
+                  style={{ display: "flex", alignItems: "center", gap: "6px" }}
+                >
+                  <span
+                    style={{
+                      fontSize: "0.75rem",
+                      color: "var(--primary)",
+                      backgroundColor: "var(--primary-light)",
+                      padding: "2px 6px",
+                      borderRadius: "4px",
+                      fontWeight: "600",
+                    }}
+                  >
+                    Local Guide
+                  </span>
+                  <span
+                    style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}
+                  >
+                    2 weeks ago
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div style={{ display: "flex", gap: "2px" }}>
+              {[1, 2, 3, 4, 5].map((s) => (
+                <Star key={s} size={15} fill="#FBBC05" color="#FBBC05" />
+              ))}
+            </div>
+
+            <p
+              style={{
+                fontSize: "0.95rem",
+                lineHeight: "1.6",
+                color: "var(--text-secondary)",
+                flex: 1,
+                fontStyle: "italic",
+              }}
+            >
+              "Had a great stay at Agrawal Homestay. The rooms were clean,
+              comfortable, and well-maintained with all the necessary amenities.
+              The location is excellent. Mahakal Mandir, Harsiddhi Mata Mandir,
+              and Kshipra Ghat are all nearby. Public transport is easily
+              available, restaurants and chaat places are also on the walking
+              distance. The hosts were extremely kind and helpful, guiding us
+              throughout our trip. The place felt 'very safe', even for solo
+              female travelers. 'Highly recommended' for anyone visiting
+              Ujjain!"
+            </p>
+
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+                fontSize: "0.8rem",
+                color: "#16A34A",
+                fontWeight: "600",
+              }}
+            >
+              <span
+                style={{
+                  width: "6px",
+                  height: "6px",
+                  borderRadius: "50%",
+                  backgroundColor: "#16A34A",
+                }}
+              />
+              Verified Google Review
+            </div>
+          </div>
+
+          {/* Review 2 */}
+          <div
+            className="card"
+            style={{
+              padding: "32px",
+              backgroundColor: "#FFFFFF",
+              border: "1px solid var(--border-color)",
+              boxShadow: "var(--shadow-sm)",
+              display: "flex",
+              flexDirection: "column",
+              gap: "16px",
+              borderRadius: "var(--radius-md)",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+              <div
+                style={{
+                  width: "44px",
+                  height: "44px",
+                  borderRadius: "50%",
+                  backgroundColor: "#FEF3C7",
+                  color: "#D97706",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontWeight: "700",
+                  fontSize: "1.1rem",
+                }}
+              >
+                S
+              </div>
+              <div>
+                <h4 style={{ fontWeight: "700", fontSize: "0.95rem" }}>
+                  Siddhant Kakade
+                </h4>
+                <div
+                  style={{ display: "flex", alignItems: "center", gap: "6px" }}
+                >
+                  <span
+                    style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}
+                  >
+                    1 month ago
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div style={{ display: "flex", gap: "2px" }}>
+              {[1, 2, 3, 4, 5].map((s) => (
+                <Star key={s} size={15} fill="#FBBC05" color="#FBBC05" />
+              ))}
+            </div>
+
+            <p
+              style={{
+                fontSize: "0.95rem",
+                lineHeight: "1.6",
+                color: "var(--text-secondary)",
+                flex: 1,
+                fontStyle: "italic",
+              }}
+            >
+              "My experience at this homestay in Ujjain was truly very good. The
+              caretakers were extremely polite, helpful, and made sure
+              everything was comfortable throughout my stay. What I liked the
+              most was the homely feeling of this place. It never felt like I
+              was staying in a hotel—it genuinely felt like I was at my own
+              home, which made the experience even more relaxing and peaceful.
+              The overall environment was calm and welcoming, making it a
+              perfect choice for anyone visiting Ujjain, especially for temple
+              visits like Mahakaleshwar Jyotirlinga. I would definitely
+              recommend this homestay to anyone looking for a comfortable and
+              homely stay in Ujjain."
+            </p>
+
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+                fontSize: "0.8rem",
+                color: "#16A34A",
+                fontWeight: "600",
+              }}
+            >
+              <span
+                style={{
+                  width: "6px",
+                  height: "6px",
+                  borderRadius: "50%",
+                  backgroundColor: "#16A34A",
+                }}
+              />
+              Verified Google Review
+            </div>
+          </div>
+
+          {/* Review 3 */}
+          <div
+            className="card"
+            style={{
+              padding: "32px",
+              backgroundColor: "#FFFFFF",
+              border: "1px solid var(--border-color)",
+              boxShadow: "var(--shadow-sm)",
+              display: "flex",
+              flexDirection: "column",
+              gap: "16px",
+              borderRadius: "var(--radius-md)",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+              <div
+                style={{
+                  width: "44px",
+                  height: "44px",
+                  borderRadius: "50%",
+                  backgroundColor: "#DCFCE7",
+                  color: "#15803D",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontWeight: "700",
+                  fontSize: "1.1rem",
+                }}
+              >
+                A
+              </div>
+              <div>
+                <h4 style={{ fontWeight: "700", fontSize: "0.95rem" }}>
+                  Aman Thakur
+                </h4>
+                <div
+                  style={{ display: "flex", alignItems: "center", gap: "6px" }}
+                >
+                  <span
+                    style={{
+                      fontSize: "0.75rem",
+                      color: "var(--primary)",
+                      backgroundColor: "var(--primary-light)",
+                      padding: "2px 6px",
+                      borderRadius: "4px",
+                      fontWeight: "600",
+                    }}
+                  >
+                    Local Guide
+                  </span>
+                  <span
+                    style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}
+                  >
+                    3 weeks ago
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div style={{ display: "flex", gap: "2px" }}>
+              {[1, 2, 3, 4, 5].map((s) => (
+                <Star key={s} size={15} fill="#FBBC05" color="#FBBC05" />
+              ))}
+            </div>
+
+            <p
+              style={{
+                fontSize: "0.95rem",
+                lineHeight: "1.6",
+                color: "var(--text-secondary)",
+                flex: 1,
+                fontStyle: "italic",
+              }}
+            >
+              "Staying here made my trip to Ujjain so much easier. The location
+              is perfect since it’s literally a 5-minute walk to Mahakaleshwar,
+              which saved us a lot of travel stress. The room was neat and
+              clean, with both AC and a geyser working perfectly. What really
+              made the stay special was the owner’s hospitality. He was
+              incredibly helpful, from assisting us with our trip planning to
+              suggesting a great local restaurant. Even after we checked out, he
+              let us keep our luggage there so we could explore the other
+              temples around Ujjain comfortably before catching our evening bus.
+              Truly a great experience and highly recommended for anyone
+              visiting."
+            </p>
+
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+                fontSize: "0.8rem",
+                color: "#16A34A",
+                fontWeight: "600",
+              }}
+            >
+              <span
+                style={{
+                  width: "6px",
+                  height: "6px",
+                  borderRadius: "50%",
+                  backgroundColor: "#16A34A",
+                }}
+              />
+              Verified Google Review
+            </div>
+          </div>
+        </div>
+
+        {/* CTA to write/view review */}
+        <div style={{ textAlign: "center" }}>
+          <a
+            href="https://maps.app.goo.gl/kadykvzjgshdEnh36"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn btn-outline"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "8px",
+              padding: "14px 28px",
+              fontSize: "0.9rem",
+              textTransform: "uppercase",
+              letterSpacing: "0.05em",
+            }}
+          >
+            View on Google Maps <ExternalLink size={16} />
+          </a>
         </div>
       </section>
 

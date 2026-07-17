@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Menu, X, Phone, Mail, MapPin, Calendar } from 'lucide-react';
 import WhatsAppFloat from '@/components/WhatsAppFloat';
+import ChatbotWidget from '@/components/ChatbotWidget';
 
 export default function PublicLayout({
   children,
@@ -233,7 +234,7 @@ export default function PublicLayout({
             <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <li style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', color: '#A8A29E', fontSize: '0.95rem' }}>
                 <MapPin size={18} style={{ color: 'var(--primary)', flexShrink: 0, marginTop: '2px' }} />
-                <span>Near Mahakaleshwar Temple, Ujjain, MP, India</span>
+                <span>27, Patwa Bakhal, Patni Bazar, Near Mahakaleshwar Temple, Ujjain, MP, India</span>
               </li>
               <li style={{ display: 'flex', alignItems: 'center', gap: '12px', color: '#A8A29E', fontSize: '0.95rem' }}>
                 <Phone size={18} style={{ color: 'var(--primary)', flexShrink: 0 }} />
@@ -268,6 +269,7 @@ export default function PublicLayout({
       </footer>
 
       <WhatsAppFloat />
+      <ChatbotWidget />
 
       {/* Injecting CSS media queries dynamically to keep things simple and fully inline-styled responsive */}
       <style jsx global>{`

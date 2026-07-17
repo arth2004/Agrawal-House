@@ -41,10 +41,10 @@ export const DEFAULT_SETTINGS: Settings = {
   booking_mode: "manual_approval",
   payment_options: ["at_property"],
   contact_details: {
-    phone: "+91 98765 43210",
-    email: "stay@agrawalhouse.com",
+    phone: "+91 7415160134, +91 9425094180",
+    email: "agrawalhouse34@gmail.com",
     address:
-      "Agrawal House, Heritage Lane, Near Mahakaleshwar Temple, Ujjain, Madhya Pradesh - 452002",
+      "27, Patwa Bakhal, Patni Bazar, Ujjain, Madhya Pradesh - 456001",
   },
 };
 
