@@ -6,7 +6,7 @@ export const DEFAULT_ROOMS: Room[] = [
   {
     id: "room-family",
     name: "Family Room",
-    description: "A spacious heritage room designed for family comfort. Styled with local aesthetics, it features high ceilings, comfortable bedding, and modern private washrooms.",
+    description: "A spacious modern room designed for family comfort. Styled with contemporary aesthetics, it features comfortable bedding and modern private washrooms.",
     max_guests: 4,
     base_price: 3500,
     amenities: [

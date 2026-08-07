@@ -84,7 +84,7 @@ export default function PublicLayout({
                 marginTop: '-2px',
               }}
             >
-              Heritage Homestay
+              Homestay
             </span>
           </Link>
 
@@ -234,7 +234,7 @@ export default function PublicLayout({
             <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <li style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', color: '#A8A29E', fontSize: '0.95rem' }}>
                 <MapPin size={18} style={{ color: 'var(--primary)', flexShrink: 0, marginTop: '2px' }} />
-                <span>27, Patwa Bakhal, Patni Bazar, Near Mahakaleshwar Temple, Ujjain, MP, India</span>
+                <span>27/1, Patwa Bakhal, Patni Bazar, Kamri Marg, Ujjain, MP - 456006</span>
               </li>
               <li style={{ display: 'flex', alignItems: 'center', gap: '12px', color: '#A8A29E', fontSize: '0.95rem' }}>
                 <Phone size={18} style={{ color: 'var(--primary)', flexShrink: 0 }} />

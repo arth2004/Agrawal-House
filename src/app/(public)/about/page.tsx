@@ -69,7 +69,7 @@ export default function AboutPage() {
         </span>
         <h1 style={{ fontSize: '3rem', marginTop: '8px', marginBottom: '16px' }}>About Agrawal House</h1>
         <p style={{ color: 'var(--text-secondary)', maxWidth: '600px', margin: '0 auto', fontSize: '1.1rem', lineHeight: '1.6' }}>
-          Step back into a world of trees, heritage architecture, and the hospitality of a family home in Ujjain.
+          A newly built modern property in the main city near Shri Mahakaleshwar Temple, offering the warm hospitality of a family home in Ujjain.
         </p>
       </section>
 
@@ -140,33 +140,60 @@ export default function AboutPage() {
             <Map size={20} style={{ color: 'var(--secondary)' }} /> Our Location
           </h3>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', lineHeight: '1.6', marginBottom: '24px' }}>
-            We are located in a quiet residential lane near the Mahakal corridor — a serene, secure environment away from city traffic, yet within walking distance of the Jyotirlinga, ghats, and the bustling lanes of old Ujjain.
+            We are located in the main city zone near Shri Mahakaleshwar Temple — a serene, secure environment within walking distance of the Jyotirlinga, Ram Ghat, and the bustling markets of Ujjain.
           </p>
-          
+
+          {/* Interactive Google Map */}
           <div
             style={{
-              height: '220px',
-              backgroundColor: '#E5E7EB',
+              position: 'relative',
               borderRadius: 'var(--radius-md)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexDirection: 'column',
-              gap: '8px',
-              border: '1px solid rgba(0,0,0,0.06)',
-              backgroundImage: 'radial-gradient(circle, #D1D5DB 1px, transparent 1px)',
-              backgroundSize: '20px 20px',
-              color: 'var(--text-primary)',
+              overflow: 'hidden',
+              boxShadow: 'var(--shadow-sm)',
+              border: '1px solid var(--border-color)',
             }}
           >
-            <MapPin size={32} style={{ color: 'var(--primary)', animation: 'bounce 2s infinite' }} />
-            <strong style={{ fontSize: '1rem' }}>Agrawal House Homestay</strong>
-            <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Ujjain, Madhya Pradesh</span>
+            <iframe
+              title="Agrawal House Location Map"
+              src="https://maps.google.com/maps?q=Agrawal%20House%20Home%20Stay%20Ujjain&t=&z=17&ie=UTF8&iwloc=&output=embed"
+              width="100%"
+              height="340"
+              style={{ border: 0, display: 'block' }}
+              loading="lazy"
+              allowFullScreen
+            />
           </div>
 
-          <div style={{ display: 'flex', gap: '12px', marginTop: '24px', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+          {/* Address & Navigation Action Bar */}
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              gap: '16px',
+              marginTop: '20px',
+            }}
+          >
+            <div style={{ display: 'flex', gap: '10px', alignItems: 'center', fontSize: '0.85rem', color: 'var(--text-secondary)', flex: 1, minWidth: '260px' }}>
+              <MapPin size={18} style={{ color: 'var(--primary)', flexShrink: 0 }} />
+              <span><strong>Address:</strong> 27, Patwa Bakhal, Patni Bazar, Near Mahakaleshwar Temple, Ujjain, MP - 456001</span>
+            </div>
+
+            <a
+              href="https://maps.google.com/?cid=6001810409185324263&g_mp=CiVnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLkdldFBsYWNlEAMYASAF&hl=en-US&source=embed"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn btn-outline"
+              style={{ padding: '8px 16px', fontSize: '0.85rem', textDecoration: 'none', gap: '6px' }}
+            >
+              Get Directions ↗
+            </a>
+          </div>
+
+          <div style={{ display: 'flex', gap: '12px', marginTop: '20px', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
             <Plane size={18} style={{ color: 'var(--primary)', flexShrink: 0 }} />
-            <span>Ujjain Junction is 1.6 km away. Devi Ahilyabai Holkar Airport (Indore) is about 57.5 km — taxis and auto-rickshaws are readily available.</span>
+            <span>Ujjain Junction Railway Station is 1.6 km away. Devi Ahilyabai Holkar Airport (Indore) is ~57.5 km — taxis and auto-rickshaws are readily available.</span>
           </div>
         </div>
       </section>

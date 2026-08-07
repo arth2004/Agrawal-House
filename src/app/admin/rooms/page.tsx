@@ -12,6 +12,12 @@ import {
   XCircle,
   Save,
   X,
+  Upload,
+  Star,
+  Trash2,
+  Camera,
+  ArrowLeft,
+  ArrowRight,
 } from "lucide-react";
 
 export default function AdminRoomsPage() {
@@ -28,6 +34,8 @@ export default function AdminRoomsPage() {
   const [maxGuests, setMaxGuests] = useState(2);
   const [basePrice, setBasePrice] = useState(3000);
   const [amenities, setAmenities] = useState<string[]>([]);
+  const [photos, setPhotos] = useState<string[]>([]);
+  const [newUrlInput, setNewUrlInput] = useState("");
   const [status, setStatus] = useState<"active" | "inactive">("active");
 
   const availableAmenities = [
@@ -68,6 +76,8 @@ export default function AdminRoomsPage() {
     setMaxGuests(2);
     setBasePrice(3000);
     setAmenities([]);
+    setPhotos(["/images/room_mango_suite.jpg"]);
+    setNewUrlInput("");
     setStatus("active");
     setIsModalOpen(true);
   };
@@ -79,6 +89,12 @@ export default function AdminRoomsPage() {
     setMaxGuests(room.max_guests);
     setBasePrice(room.base_price);
     setAmenities(room.amenities);
+    setPhotos(
+      room.photos && room.photos.length > 0
+        ? [...room.photos]
+        : ["/images/room_mango_suite.jpg"]
+    );
+    setNewUrlInput("");
     setStatus(room.status);
     setIsModalOpen(true);
   };
@@ -89,6 +105,53 @@ export default function AdminRoomsPage() {
     } else {
       setAmenities([...amenities, amenity]);
     }
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    for (const file of Array.from(files)) {
+      try {
+        const photoUrl = await db.uploadRoomPhoto(file);
+        setPhotos((prev) => [...prev, photoUrl]);
+      } catch (err) {
+        console.error("Error uploading room photo:", err);
+      }
+    }
+    e.target.value = "";
+  };
+
+  const handleAddPhotoUrl = () => {
+    const url = newUrlInput.trim();
+    if (!url) return;
+    setPhotos((prev) => [...prev, url]);
+    setNewUrlInput("");
+  };
+
+  const handleMakeThumbnail = (index: number) => {
+    if (index === 0) return;
+    setPhotos((prev) => {
+      const updated = [...prev];
+      const [selected] = updated.splice(index, 1);
+      return [selected, ...updated];
+    });
+  };
+
+  const handleRemovePhoto = (index: number) => {
+    setPhotos((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleMovePhoto = (index: number, direction: "left" | "right") => {
+    const newIndex = direction === "left" ? index - 1 : index + 1;
+    if (newIndex < 0 || newIndex >= photos.length) return;
+    setPhotos((prev) => {
+      const updated = [...prev];
+      const temp = updated[index];
+      updated[index] = updated[newIndex];
+      updated[newIndex] = temp;
+      return updated;
+    });
   };
 
   const handleSaveRoom = async (e: React.FormEvent) => {
@@ -102,9 +165,7 @@ export default function AdminRoomsPage() {
       max_guests: maxGuests,
       base_price: Number(basePrice),
       amenities,
-      photos: editingRoom
-        ? editingRoom.photos
-        : ["/images/room_mango_suite.jpg"], // default photo if new
+      photos: photos.length > 0 ? photos : ["/images/room_mango_suite.jpg"],
       status,
     };
 
@@ -209,6 +270,24 @@ export default function AdminRoomsPage() {
                 }}
               >
                 ₹{room.base_price} / night
+              </div>
+              <div
+                style={{
+                  position: "absolute",
+                  top: "12px",
+                  right: "12px",
+                  backgroundColor: "rgba(28, 25, 23, 0.8)",
+                  color: "#FFFFFF",
+                  padding: "4px 8px",
+                  borderRadius: "4px",
+                  fontSize: "0.75rem",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "4px",
+                  backdropFilter: "blur(4px)",
+                }}
+              >
+                <Camera size={12} /> {room.photos ? room.photos.length : 0} photos
               </div>
             </div>
 
@@ -547,6 +626,271 @@ export default function AdminRoomsPage() {
                     );
                   })}
                 </div>
+              </div>
+
+              {/* Room Photos & Thumbnail Selection */}
+              <div
+                style={{
+                  border: "1px solid var(--border-color)",
+                  borderRadius: "var(--radius-md)",
+                  padding: "16px",
+                  backgroundColor: "#FAFAF9",
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    marginBottom: "8px",
+                  }}
+                >
+                  <label
+                    style={{
+                      fontSize: "0.8rem",
+                      fontWeight: "600",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "6px",
+                    }}
+                  >
+                    <Camera size={16} style={{ color: "var(--primary)" }} />
+                    ROOM PHOTOS & THUMBNAIL ({photos.length})
+                  </label>
+
+                  <label
+                    className="btn btn-outline"
+                    style={{
+                      padding: "6px 12px",
+                      fontSize: "0.75rem",
+                      borderRadius: "4px",
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "6px",
+                      backgroundColor: "#FFFFFF",
+                    }}
+                  >
+                    <Upload size={14} /> Upload Photos
+                    <input
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      onChange={handleFileUpload}
+                      style={{ display: "none" }}
+                    />
+                  </label>
+                </div>
+
+                <p
+                  style={{
+                    fontSize: "0.75rem",
+                    color: "var(--text-secondary)",
+                    marginBottom: "16px",
+                    lineHeight: "1.4",
+                  }}
+                >
+                  Upload image files or add URL links. The photo marked as <strong>★ Main Thumbnail</strong> (first image) will be shown as the primary room cover.
+                </p>
+
+                {/* Add photo via URL */}
+                <div style={{ display: "flex", gap: "8px", marginBottom: "16px" }}>
+                  <input
+                    type="text"
+                    value={newUrlInput}
+                    onChange={(e) => setNewUrlInput(e.target.value)}
+                    placeholder="Or enter image path (e.g. /images/bed-1a.jpg or URL)"
+                    style={{
+                      flex: 1,
+                      padding: "8px 12px",
+                      borderRadius: "var(--radius-sm)",
+                      border: "1px solid var(--border-color)",
+                      fontSize: "0.85rem",
+                      outline: "none",
+                      backgroundColor: "#FFFFFF",
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAddPhotoUrl}
+                    className="btn btn-outline"
+                    style={{ padding: "8px 12px", fontSize: "0.75rem", flexShrink: 0, backgroundColor: "#FFFFFF" }}
+                  >
+                    <Plus size={14} /> Add URL
+                  </button>
+                </div>
+
+                {/* Photos List Grid */}
+                {photos.length === 0 ? (
+                  <div
+                    style={{
+                      textAlign: "center",
+                      padding: "20px",
+                      border: "1px dashed var(--border-color)",
+                      borderRadius: "6px",
+                      color: "var(--text-muted)",
+                      fontSize: "0.85rem",
+                      backgroundColor: "#FFFFFF",
+                    }}
+                  >
+                    No photos added yet. Upload files or paste image URLs above.
+                  </div>
+                ) : (
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "repeat(auto-fill, minmax(130px, 1fr))",
+                      gap: "12px",
+                    }}
+                  >
+                    {photos.map((photoUrl, idx) => {
+                      const isThumbnail = idx === 0;
+                      return (
+                        <div
+                          key={idx}
+                          style={{
+                            position: "relative",
+                            borderRadius: "6px",
+                            overflow: "hidden",
+                            border: isThumbnail
+                              ? "2px solid var(--primary)"
+                              : "1px solid var(--border-color)",
+                            backgroundColor: "#FFFFFF",
+                            boxShadow: isThumbnail ? "0 2px 8px rgba(180,83,9,0.25)" : "none",
+                            display: "flex",
+                            flexDirection: "column",
+                          }}
+                        >
+                          <div style={{ position: "relative", height: "90px", backgroundColor: "#E5E7EB" }}>
+                            <img
+                              src={photoUrl}
+                              alt={`Room photo ${idx + 1}`}
+                              style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                            />
+
+                            {/* Thumbnail Badge */}
+                            {isThumbnail && (
+                              <span
+                                style={{
+                                  position: "absolute",
+                                  top: "4px",
+                                  left: "4px",
+                                  backgroundColor: "var(--primary)",
+                                  color: "#FFFFFF",
+                                  fontSize: "0.65rem",
+                                  fontWeight: "700",
+                                  padding: "2px 6px",
+                                  borderRadius: "4px",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: "3px",
+                                  boxShadow: "0 1px 3px rgba(0,0,0,0.3)",
+                                }}
+                              >
+                                <Star size={10} fill="#FFFFFF" /> Main
+                              </span>
+                            )}
+
+                            {/* Delete Button */}
+                            <button
+                              type="button"
+                              onClick={() => handleRemovePhoto(idx)}
+                              title="Delete photo"
+                              style={{
+                                position: "absolute",
+                                top: "4px",
+                                right: "4px",
+                                backgroundColor: "rgba(239, 68, 68, 0.9)",
+                                color: "#FFFFFF",
+                                border: "none",
+                                borderRadius: "4px",
+                                width: "22px",
+                                height: "22px",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                cursor: "pointer",
+                              }}
+                            >
+                              <Trash2 size={12} />
+                            </button>
+                          </div>
+
+                          {/* Controls bar */}
+                          <div
+                            style={{
+                              padding: "6px 8px",
+                              backgroundColor: isThumbnail ? "#FEF3C7" : "#F5F5F4",
+                              display: "flex",
+                              justifyContent: "space-between",
+                              alignItems: "center",
+                              borderTop: "1px solid var(--border-color)",
+                            }}
+                          >
+                            {!isThumbnail ? (
+                              <button
+                                type="button"
+                                onClick={() => handleMakeThumbnail(idx)}
+                                className="btn"
+                                style={{
+                                  padding: "2px 6px",
+                                  fontSize: "0.65rem",
+                                  fontWeight: "600",
+                                  backgroundColor: "#FFFFFF",
+                                  border: "1px solid var(--border-color)",
+                                  borderRadius: "3px",
+                                  color: "var(--primary)",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: "3px",
+                                  cursor: "pointer",
+                                }}
+                              >
+                                <Star size={10} /> Set Main
+                              </button>
+                            ) : (
+                              <span style={{ fontSize: "0.65rem", fontWeight: "700", color: "var(--primary)" }}>
+                                ★ Primary
+                              </span>
+                            )}
+
+                            {/* Reorder Arrows */}
+                            <div style={{ display: "flex", gap: "2px" }}>
+                              <button
+                                type="button"
+                                disabled={idx === 0}
+                                onClick={() => handleMovePhoto(idx, "left")}
+                                style={{
+                                  background: "none",
+                                  border: "none",
+                                  cursor: idx === 0 ? "default" : "pointer",
+                                  opacity: idx === 0 ? 0.3 : 1,
+                                  padding: "2px",
+                                }}
+                              >
+                                <ArrowLeft size={12} />
+                              </button>
+                              <button
+                                type="button"
+                                disabled={idx === photos.length - 1}
+                                onClick={() => handleMovePhoto(idx, "right")}
+                                style={{
+                                  background: "none",
+                                  border: "none",
+                                  cursor: idx === photos.length - 1 ? "default" : "pointer",
+                                  opacity: idx === photos.length - 1 ? 0.3 : 1,
+                                  padding: "2px",
+                                }}
+                              >
+                                <ArrowRight size={12} />
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
 
               {/* Status toggle */}

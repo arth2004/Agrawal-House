@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import BookingWidget from "@/components/BookingWidget";
+import RoomGallery from "@/components/RoomGallery";
 import { ArrowLeft, Check, Sparkles, Shield } from "lucide-react";
 
 export const revalidate = 0; // Fresh room data on request
@@ -58,21 +59,7 @@ export default async function RoomDetailPage({ params }: RoomDetailPageProps) {
         {/* Left Side: Images & Info */}
         <div style={{ display: "flex", flexDirection: "column", gap: "40px" }}>
           {/* Main Photo Gallery */}
-          <div
-            style={{
-              borderRadius: "var(--radius-lg)",
-              overflow: "hidden",
-              boxShadow: "var(--shadow-md)",
-              height: "400px",
-            }}
-            className="detail-hero-img"
-          >
-            <img
-              src={room.photos[0] || "/images/room_mango_suite.jpg"}
-              alt={room.name}
-              style={{ width: "100%", height: "100%", objectFit: "cover" }}
-            />
-          </div>
+          <RoomGallery photos={room.photos} roomName={room.name} />
 
           {/* Heading */}
           <div>

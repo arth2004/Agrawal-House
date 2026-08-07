@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { ChevronLeft, ChevronRight, X, Images } from "lucide-react";
+import { db } from "@/lib/db";
 
 interface GalleryCategory {
   category: string;
@@ -9,13 +10,11 @@ interface GalleryCategory {
   photos: string[];
 }
 
-// Add as many photo paths as you like under each category — every photo in
-// the array will be viewable inside that category's lightbox.
-const galleryCategories: GalleryCategory[] = [
+const defaultCategories: GalleryCategory[] = [
   {
     category: "Exterior",
     title: "Exterior & Surroundings",
-    photos: ["images/Front New.jpeg", "images/side-f.jpg", "images/side-h.jpg"],
+    photos: ["/images/Front New.jpeg", "/images/side-f.jpg", "/images/side-h.jpg"],
   },
   {
     category: "Family Room",
@@ -34,15 +33,43 @@ const galleryCategories: GalleryCategory[] = [
 ];
 
 export default function GalleryPage() {
+  const [categories, setCategories] = useState<GalleryCategory[]>(defaultCategories);
   const [activeCategoryIndex, setActiveCategoryIndex] = useState<number | null>(
     null,
   );
   const [activePhotoIndex, setActivePhotoIndex] = useState(0);
 
+  useEffect(() => {
+    async function loadDynamicRooms() {
+      try {
+        const rooms = await db.getRooms();
+        if (rooms && rooms.length > 0) {
+          const dynamicRoomCats: GalleryCategory[] = rooms.map((room) => ({
+            category: room.name,
+            title: room.name,
+            photos: room.photos && room.photos.length > 0 ? room.photos : ["/images/room_mango_suite.jpg"],
+          }));
+
+          setCategories([
+            {
+              category: "Exterior",
+              title: "Exterior & Surroundings",
+              photos: ["/images/Front New.jpeg", "/images/side-f.jpg", "/images/side-h.jpg"],
+            },
+            ...dynamicRoomCats,
+          ]);
+        }
+      } catch (err) {
+        console.error("Error loading gallery rooms:", err);
+      }
+    }
+    loadDynamicRooms();
+  }, []);
+
   const isOpen = activeCategoryIndex !== null;
   const activeCategory =
     activeCategoryIndex !== null
-      ? galleryCategories[activeCategoryIndex]
+      ? categories[activeCategoryIndex]
       : null;
 
   const openCategory = (index: number) => {
@@ -117,7 +144,7 @@ export default function GalleryPage() {
             lineHeight: "1.6",
           }}
         >
-          Explore the architecture, warm spaces, gardens, and premium rooms of
+          Explore the architecture, warm spaces, and premium rooms of
           Agrawal House. Tap a category to browse every photo.
         </p>
       </div>
@@ -129,7 +156,7 @@ export default function GalleryPage() {
           gap: "32px",
         }}
       >
-        {galleryCategories.map((cat, i) => (
+        {categories.map((cat, i) => (
           <button
             key={cat.category}
             onClick={() => openCategory(i)}

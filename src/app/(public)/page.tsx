@@ -1145,7 +1145,7 @@ export default async function HomePage() {
         {/* CTA to write/view review */}
         <div style={{ textAlign: "center" }}>
           <a
-            href="https://maps.app.goo.gl/kadykvzjgshdEnh36"
+            href="https://maps.app.goo.gl/k58ihqAVRoWvPEL88"
             target="_blank"
             rel="noopener noreferrer"
             className="btn btn-outline"

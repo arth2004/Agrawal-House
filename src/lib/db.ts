@@ -1,4 +1,4 @@
-import { createClient } from "@supabase/supabase-js";
+import { createClient, SupabaseClient } from "@supabase/supabase-js";
 import { Room, Booking, BlockedDate, Enquiry, Settings, PricingRule } from "./types";
 import { mockDB } from "./mockData";
 import { findBookingConflict } from "./availability";
@@ -16,23 +16,47 @@ type SettingRow = {
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-const isSupabaseConfigured =
+const isSupabaseConfigured = Boolean(
   supabaseUrl &&
-  supabaseUrl !== "your-supabase-url" &&
-  supabaseAnonKey &&
-  supabaseAnonKey !== "your-supabase-anon-key";
+    supabaseUrl !== "your-supabase-url" &&
+    supabaseAnonKey &&
+    supabaseAnonKey !== "your-supabase-anon-key"
+);
 
-// Initialize Supabase if configured, otherwise null
-const supabase = isSupabaseConfigured
-  ? createClient(supabaseUrl!, supabaseAnonKey!)
-  : null;
+// Singleton instance to prevent "Multiple GoTrueClient instances" warnings in browser context during Fast Refresh / HMR
+const globalForSupabase = globalThis as unknown as {
+  supabaseClient?: SupabaseClient;
+};
+
+const getSupabaseClient = (): SupabaseClient | null => {
+  if (!isSupabaseConfigured) return null;
+  if (typeof window !== "undefined") {
+    if (!globalForSupabase.supabaseClient) {
+      globalForSupabase.supabaseClient = createClient(
+        supabaseUrl!,
+        supabaseAnonKey!,
+        {
+          auth: {
+            persistSession: true,
+            autoRefreshToken: true,
+            detectSessionInUrl: true,
+          },
+        }
+      );
+    }
+    return globalForSupabase.supabaseClient;
+  }
+  return createClient(supabaseUrl!, supabaseAnonKey!, {
+    auth: { persistSession: false },
+  });
+};
+
+export const supabase: SupabaseClient | null = getSupabaseClient();
 
 if (!isSupabaseConfigured) {
   console.log(
-    "Database client: Supabase credentials not found or set to placeholder. Falling back to Local Mock Database.",
+    "Database client: Supabase credentials not found or set to placeholder. Falling back to Local Mock Database."
   );
-} else {
-  console.log("Database client: Supabase successfully initialized.");
 }
 
 export const db = {
@@ -81,6 +105,43 @@ export const db = {
       return data as Room;
     }
     return mockDB.saveRoom(room);
+  },
+
+  async uploadRoomPhoto(file: File): Promise<string> {
+    if (supabase) {
+      try {
+        const fileExt = file.name.split(".").pop();
+        const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
+        const filePath = `${fileName}`;
+
+        const { data, error } = await supabase.storage
+          .from("room-photos")
+          .upload(filePath, file, { upsert: true });
+
+        if (error) {
+          console.error("Supabase Storage Upload Error:", error.message, error);
+        } else if (data) {
+          const { data: publicUrlData } = supabase.storage
+            .from("room-photos")
+            .getPublicUrl(filePath);
+          if (publicUrlData?.publicUrl) {
+            console.log("Photo successfully uploaded to Supabase Storage:", publicUrlData.publicUrl);
+            return publicUrlData.publicUrl;
+          }
+        }
+      } catch (err) {
+        console.error("Supabase storage upload error:", err);
+      }
+    }
+
+    // Fallback: convert file to Base64 Data URL if Supabase storage is unconfigured or errors out
+    console.warn("Falling back to Base64 Data URL for room photo upload.");
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => resolve(e.target?.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
   },
 
   // --- BLOCKED DATES ---
