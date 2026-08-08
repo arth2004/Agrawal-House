@@ -29,6 +29,7 @@ export default function PublicLayout({
   }, []);
 
   const navLinks = [
+    { name: 'Services', href: '/services' },
     { name: 'Rooms', href: '/rooms' },
     { name: 'Gallery', href: '/gallery' },
     { name: 'About & Location', href: '/about' },

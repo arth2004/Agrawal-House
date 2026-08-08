@@ -1,6 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import { db } from "@/lib/db";
+import ServiceCard from "@/components/ServiceCard";
 import {
   Coffee,
   MapPin,
@@ -27,7 +28,9 @@ export const revalidate = 0; // Disable caching to ensure fresh DB state
 
 export default async function HomePage() {
   const rooms = await db.getRooms();
+  const services = await db.getServices();
   const activeRooms = rooms.filter((r) => r.status === "active").slice(0, 3);
+  const activeServices = services.filter((service) => service.status === "active").slice(0, 3);
 
   return (
     <div
@@ -243,6 +246,45 @@ export default async function HomePage() {
                 Rated 4.9/5 by over 350 guests from across India.
               </p>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 2.5 Services Section */}
+      <section className="container">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
+          <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: '20px', flexWrap: 'wrap' }}>
+            <div>
+              <span
+                style={{
+                  color: 'var(--primary)',
+                  fontWeight: '600',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.1em',
+                  fontSize: '0.85rem',
+                }}
+              >
+                Our Services
+              </span>
+              <h2 style={{ fontSize: '2.5rem', marginTop: '8px' }}>
+                Flexible offerings built for pilgrims and travelers
+              </h2>
+            </div>
+            <Link href="/services" className="btn btn-outline">
+              View All Services <ArrowRight size={16} />
+            </Link>
+          </div>
+
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+              gap: '28px',
+            }}
+          >
+            {activeServices.map((service) => (
+              <ServiceCard key={service.id} service={service} />
+            ))}
           </div>
         </div>
       </section>

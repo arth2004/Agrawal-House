@@ -1,12 +1,24 @@
-import { Room, Booking, BlockedDate, Enquiry, Settings, PricingRule } from "./types";
+import {
+  Room,
+  Booking,
+  BlockedDate,
+  Enquiry,
+  Settings,
+  PricingRule,
+  Service,
+} from "./types";
 import { findBookingConflict } from "./availability";
+
+const createSectionId = (prefix: string) =>
+  `${prefix}-${Math.random().toString(36).slice(2, 10)}`;
 
 // Default mock database state
 export const DEFAULT_ROOMS: Room[] = [
   {
     id: "room-family",
     name: "Family Room",
-    description: "A spacious modern room designed for family comfort. Styled with contemporary aesthetics, it features comfortable bedding and modern private washrooms.",
+    description:
+      "A spacious modern room designed for family comfort. Styled with contemporary aesthetics, it features comfortable bedding and modern private washrooms.",
     max_guests: 4,
     base_price: 3500,
     amenities: [
@@ -22,7 +34,8 @@ export const DEFAULT_ROOMS: Room[] = [
   {
     id: "room-double",
     name: "Double Room",
-    description: "A warm, elegantly decorated room ideal for couples or solo travelers. Features a plush double bed, ambient traditional lighting, and an attached modern bathroom.",
+    description:
+      "A warm, elegantly decorated room ideal for couples or solo travelers. Features a plush double bed, ambient traditional lighting, and an attached modern bathroom.",
     max_guests: 2,
     base_price: 2500,
     amenities: [
@@ -34,7 +47,7 @@ export const DEFAULT_ROOMS: Room[] = [
     ],
     photos: ["/images/bed-1a.jpg"],
     status: "active",
-  }
+  },
 ];
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -43,13 +56,286 @@ export const DEFAULT_SETTINGS: Settings = {
   contact_details: {
     phone: "+91 7415160134, +91 9425094180",
     email: "agrawalhouse34@gmail.com",
-    address:
-      "27, Patwa Bakhal, Patni Bazar, Ujjain, Madhya Pradesh - 456001",
+    address: "27, Patwa Bakhal, Patni Bazar, Ujjain, Madhya Pradesh - 456001",
   },
 };
 
+export const DEFAULT_SERVICES: Service[] = [
+  {
+    id: "service-pandit-booking",
+    slug: "pandit-booking",
+    name: "Pandit Booking",
+    short_description:
+      "Experienced pandits in Ujjain for pujas, rituals, and personalised booking support.",
+    icon: "Landmark",
+    cover_image: "/images/Mahakal.png",
+    gallery: [
+      "/images/Mahakal.png",
+      "/images/front.jpg",
+      "/images/hero_sunset.jpg",
+    ],
+    sort_order: 1,
+    status: "active",
+    sections: [
+      {
+        id: createSectionId("pandit-intro"),
+        type: "rich-text",
+        title: "Guided ritual support for every occasion",
+        body: "We connect guests with experienced pandits in Ujjain for sacred rituals, personal ceremonies, and temple-related pujas. The full service structure is content-driven, so you can expand the list of pujas, add new guidance, or create new ritual packages without changing the page layout.",
+      },
+      {
+        id: createSectionId("pandit-pujas"),
+        type: "list",
+        title: "Popular pujas we currently arrange",
+        description:
+          "This list is editable and can grow with every new ritual offering.",
+        items: [
+          "Mahakal Puja",
+          "Mangal Dosh Puja",
+          "Kaal Sarp Dosh Puja",
+          "Rudrabhishek",
+          "Navgrah Puja",
+          "Pitra Dosh Puja",
+        ],
+      },
+      {
+        id: createSectionId("pandit-info"),
+        type: "info-grid",
+        title: "Service details",
+        infoItems: [
+          { label: "Booking style", value: "Advance or same-day support" },
+          { label: "Languages", value: "Hindi / Sanskrit guidance" },
+          {
+            label: "Travel assistance",
+            value: "Temple and location coordination",
+          },
+          { label: "Customisation", value: "New rituals can be added anytime" },
+        ],
+      },
+      {
+        id: createSectionId("pandit-faq"),
+        type: "faq",
+        title: "Frequently asked questions",
+        faqs: [
+          {
+            question: "Can new pujas be added later?",
+            answer:
+              "Yes. The puja list is content-driven, so you can keep adding new rituals from the admin side without redesigning the page.",
+          },
+          {
+            question: "Do you arrange material for the puja?",
+            answer:
+              "You can note required samagri in the section structure, and later extend it with custom instructions or item lists.",
+          },
+        ],
+      },
+      {
+        id: createSectionId("pandit-cta"),
+        type: "cta",
+        title: "Plan a ritual with confidence",
+        description:
+          "Share the puja type, preferred date, and number of participants. We will help coordinate the right pandit and timing.",
+        primaryCta: {
+          label: "Enquiry for Pandit Booking",
+          href: "/enquiry",
+        },
+        secondaryCta: {
+          label: "Explore all services",
+          href: "/services",
+        },
+      },
+    ],
+  },
+  {
+    id: "service-room-assistance",
+    slug: "room-booking-assistance",
+    name: "Room Booking Assistance",
+    short_description:
+      "Trusted nearby hotels, guest houses, and dharamshalas when our own rooms are full.",
+    icon: "Hotel",
+    cover_image: "/images/room_mango_suite.jpg",
+    gallery: [
+      "/images/room_mango_suite.jpg",
+      "/images/room_terracotta_cottage.jpg",
+      "/images/room_courtyard.jpg",
+    ],
+    sort_order: 2,
+    status: "active",
+    sections: [
+      {
+        id: createSectionId("room-assist-intro"),
+        type: "rich-text",
+        title: "Accommodation support beyond our property",
+        body: "If rooms are unavailable at Agrawal House, we can arrange accommodation at trusted nearby properties we personally recommend. The page structure supports unlimited hotel options, room types, price details, images, and booking notes.",
+      },
+      {
+        id: createSectionId("room-assist-options"),
+        type: "list",
+        title: "Accommodation options we can arrange",
+        items: [
+          "Comfortable hotels near Mahakaleshwar Temple",
+          "Family-friendly guest houses",
+          "Budget-friendly dharamshalas",
+          "Short-stay options for pilgrims",
+        ],
+      },
+      {
+        id: createSectionId("room-assist-details"),
+        type: "info-grid",
+        title: "What you can document on this page",
+        infoItems: [
+          { label: "Hotel options", value: "Unlimited entries" },
+          { label: "Room types", value: "Custom room categories" },
+          { label: "Amenities", value: "Editable amenity lists" },
+          { label: "Temple distance", value: "Distance from Mahakaleshwar" },
+        ],
+      },
+      {
+        id: createSectionId("room-assist-gallery"),
+        type: "gallery",
+        title: "Reference photos",
+        images: [
+          "/images/room_mango_suite.jpg",
+          "/images/room_terracotta_cottage.jpg",
+          "/images/bed-1a.jpg",
+        ],
+      },
+      {
+        id: createSectionId("room-assist-faq"),
+        type: "faq",
+        title: "Frequently asked questions",
+        faqs: [
+          {
+            question: "Can I add more partner hotels later?",
+            answer:
+              "Yes. Add new accommodation entries from the admin content model whenever you want.",
+          },
+          {
+            question: "Can we note pricing by room type?",
+            answer:
+              "Yes. Pricing can be documented as a dedicated section, including optional seasonal rates or notes.",
+          },
+        ],
+      },
+      {
+        id: createSectionId("room-assist-cta"),
+        type: "cta",
+        title: "Need help finding a stay?",
+        description:
+          "Tell us your dates, guest count, and budget, and we will suggest the best available option.",
+        primaryCta: {
+          label: "Request room assistance",
+          href: "/enquiry",
+        },
+        secondaryCta: {
+          label: "View rooms",
+          href: "/rooms",
+        },
+      },
+    ],
+  },
+  {
+    id: "service-taxi-services",
+    slug: "taxi-services",
+    name: "Taxi Services",
+    short_description:
+      "Local and outstation taxi support for temple visits, airport transfers, and nearby routes.",
+    icon: "CarFront",
+    cover_image: "/images/card.jpg",
+    gallery: [
+      "/images/card.jpg",
+      "/images/front.jpg",
+      "/images/hero_sunset.jpg",
+    ],
+    sort_order: 3,
+    status: "active",
+    sections: [
+      {
+        id: createSectionId("taxi-intro"),
+        type: "rich-text",
+        title: "Flexible taxi support for local and outstation travel",
+        body: "We provide taxi services for both local travel and longer routes. Add or update routes, vehicle types, fare notes, timing estimates, and pickup details without changing the page structure.",
+      },
+      {
+        id: createSectionId("taxi-routes"),
+        type: "list",
+        title: "Initial routes",
+        description:
+          "These routes are editable and can be expanded whenever new travel needs appear.",
+        items: [
+          "Ujjain → Indore",
+          "Ujjain → Indore Airport",
+          "Ujjain → Omkareshwar",
+        ],
+      },
+      {
+        id: createSectionId("taxi-details"),
+        type: "info-grid",
+        title: "Service details",
+        infoItems: [
+          {
+            label: "Vehicle types",
+            value: "Sedan, SUV, and outstation options",
+          },
+          { label: "Fare", value: "Optional route-wise pricing" },
+          {
+            label: "Pickup / drop",
+            value: "Temple, hotel, and city pickup support",
+          },
+          {
+            label: "Travel time",
+            value: "Estimated timings can be listed per route",
+          },
+        ],
+      },
+      {
+        id: createSectionId("taxi-gallery"),
+        type: "gallery",
+        title: "Travel images",
+        images: [
+          "/images/card.jpg",
+          "/images/front.jpg",
+          "/images/hero_sunset.jpg",
+        ],
+      },
+      {
+        id: createSectionId("taxi-pricing"),
+        type: "pricing",
+        title: "Route pricing placeholder",
+        pricingItems: [
+          { label: "Ujjain → Indore", note: "Add fare later if needed" },
+          {
+            label: "Ujjain → Indore Airport",
+            note: "Optional airport transfer pricing",
+          },
+          {
+            label: "Ujjain → Omkareshwar",
+            note: "Flexible one-way or round-trip fare",
+          },
+        ],
+      },
+      {
+        id: createSectionId("taxi-cta"),
+        type: "cta",
+        title: "Reserve your ride",
+        description:
+          "Use this content structure to add new routes, vehicle photos, and travel notes whenever you expand the fleet.",
+        primaryCta: {
+          label: "Request taxi booking",
+          href: "/enquiry",
+        },
+        secondaryCta: {
+          label: "View services",
+          href: "/services",
+        },
+      },
+    ],
+  },
+];
+
 type MockDbState = {
   rooms: Room[];
+  services: Service[];
   blockedDates: BlockedDate[];
   bookings: Booking[];
   enquiries: Enquiry[];
@@ -59,6 +345,7 @@ type MockDbState = {
 
 const STORAGE_KEYS = {
   rooms: "ah_rooms",
+  services: "ah_services",
   blockedDates: "ah_blocked_dates",
   bookings: "ah_bookings",
   enquiries: "ah_enquiries",
@@ -67,6 +354,7 @@ const STORAGE_KEYS = {
 
 const createDefaultState = (): MockDbState => ({
   rooms: [...DEFAULT_ROOMS],
+  services: [...DEFAULT_SERVICES],
   blockedDates: [],
   bookings: [],
   enquiries: [],
@@ -77,6 +365,7 @@ const createDefaultState = (): MockDbState => ({
 // In-Memory state for Server Side rendering mock database
 class MockDB {
   private rooms: Room[] = [...DEFAULT_ROOMS];
+  private services: Service[] = [...DEFAULT_SERVICES];
   private blockedDates: BlockedDate[] = [];
   private bookings: Booking[] = [];
   private enquiries: Enquiry[] = [];
@@ -86,6 +375,7 @@ class MockDB {
   constructor() {
     const defaults = createDefaultState();
     this.rooms = defaults.rooms;
+    this.services = defaults.services;
     this.blockedDates = defaults.blockedDates;
     this.bookings = defaults.bookings;
     this.enquiries = defaults.enquiries;
@@ -100,6 +390,7 @@ class MockDB {
   private getStateSnapshot(): MockDbState {
     return {
       rooms: this.rooms,
+      services: this.services,
       blockedDates: this.blockedDates,
       bookings: this.bookings,
       enquiries: this.enquiries,
@@ -110,6 +401,7 @@ class MockDB {
 
   private applyState(state: MockDbState) {
     this.rooms = state.rooms;
+    this.services = state.services;
     this.blockedDates = state.blockedDates;
     this.bookings = state.bookings;
     this.enquiries = state.enquiries;
@@ -121,6 +413,7 @@ class MockDB {
     if (this.isBrowser()) {
       try {
         const storedRooms = localStorage.getItem(STORAGE_KEYS.rooms);
+        const storedServices = localStorage.getItem(STORAGE_KEYS.services);
         const storedBlocked = localStorage.getItem(STORAGE_KEYS.blockedDates);
         const storedBookings = localStorage.getItem(STORAGE_KEYS.bookings);
         const storedEnquiries = localStorage.getItem(STORAGE_KEYS.enquiries);
@@ -129,23 +422,31 @@ class MockDB {
 
         const parsedRooms = storedRooms ? JSON.parse(storedRooms) : null;
         if (parsedRooms) {
-          const hasOldRooms = parsedRooms.some((r: any) => 
-            r.id === 'room-mango-suite' || 
-            r.id === 'room-terracotta-cottage' || 
-            r.id === 'room-courtyard'
+          const hasOldRooms = parsedRooms.some(
+            (r: any) =>
+              r.id === "room-mango-suite" ||
+              r.id === "room-terracotta-cottage" ||
+              r.id === "room-courtyard",
           );
           if (hasOldRooms) {
             this.rooms = [...DEFAULT_ROOMS];
+            this.services = [...DEFAULT_SERVICES];
             this.blockedDates = [];
             this.bookings = [];
             this.saveState();
           } else {
             this.rooms = parsedRooms;
+            this.services = storedServices
+              ? JSON.parse(storedServices)
+              : [...DEFAULT_SERVICES];
             this.blockedDates = storedBlocked ? JSON.parse(storedBlocked) : [];
             this.bookings = storedBookings ? JSON.parse(storedBookings) : [];
           }
         } else {
           this.rooms = [...DEFAULT_ROOMS];
+          this.services = storedServices
+            ? JSON.parse(storedServices)
+            : [...DEFAULT_SERVICES];
           this.blockedDates = storedBlocked ? JSON.parse(storedBlocked) : [];
           this.bookings = storedBookings ? JSON.parse(storedBookings) : [];
         }
@@ -168,16 +469,18 @@ class MockDB {
       const filePath = `${process.cwd()}/.mock-db.json`;
       const raw = await fs.readFile(filePath, "utf8");
       const parsed = JSON.parse(raw) as Partial<MockDbState>;
-      
-      const hasOldRooms = parsed.rooms?.some((r: any) => 
-        r.id === 'room-mango-suite' || 
-        r.id === 'room-terracotta-cottage' || 
-        r.id === 'room-courtyard'
+
+      const hasOldRooms = parsed.rooms?.some(
+        (r: any) =>
+          r.id === "room-mango-suite" ||
+          r.id === "room-terracotta-cottage" ||
+          r.id === "room-courtyard",
       );
 
       if (hasOldRooms) {
         this.applyState({
           rooms: [...DEFAULT_ROOMS],
+          services: [...DEFAULT_SERVICES],
           blockedDates: [],
           bookings: [],
           enquiries: parsed.enquiries ?? [],
@@ -188,6 +491,7 @@ class MockDB {
       } else {
         this.applyState({
           rooms: parsed.rooms ?? [...DEFAULT_ROOMS],
+          services: parsed.services ?? [...DEFAULT_SERVICES],
           blockedDates: parsed.blockedDates ?? [],
           bookings: parsed.bookings ?? [],
           enquiries: parsed.enquiries ?? [],
@@ -205,6 +509,10 @@ class MockDB {
     if (this.isBrowser()) {
       try {
         localStorage.setItem(STORAGE_KEYS.rooms, JSON.stringify(this.rooms));
+        localStorage.setItem(
+          STORAGE_KEYS.services,
+          JSON.stringify(this.services),
+        );
         localStorage.setItem(
           STORAGE_KEYS.blockedDates,
           JSON.stringify(this.blockedDates),
@@ -265,6 +573,46 @@ class MockDB {
     }
     await this.saveState();
     return room;
+  }
+
+  // Services
+  async getServices(): Promise<Service[]> {
+    await this.loadState();
+    return [...this.services].sort(
+      (a, b) => a.sort_order - b.sort_order || a.name.localeCompare(b.name),
+    );
+  }
+
+  async getService(slug: string): Promise<Service | undefined> {
+    await this.loadState();
+    return this.services.find((service) => service.slug === slug);
+  }
+
+  async saveService(service: Service): Promise<Service> {
+    await this.loadState();
+    const index = this.services.findIndex((entry) => entry.id === service.id);
+    const nextService = {
+      ...service,
+      created_at: service.created_at ?? new Date().toISOString(),
+    };
+
+    if (index >= 0) {
+      this.services[index] = nextService;
+    } else {
+      this.services.push(nextService);
+    }
+
+    this.services = [...this.services].sort(
+      (a, b) => a.sort_order - b.sort_order || a.name.localeCompare(b.name),
+    );
+    await this.saveState();
+    return nextService;
+  }
+
+  async deleteService(id: string): Promise<void> {
+    await this.loadState();
+    this.services = this.services.filter((service) => service.id !== id);
+    await this.saveState();
   }
 
   // Blocked Dates

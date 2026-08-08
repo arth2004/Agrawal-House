@@ -1,5 +1,13 @@
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
-import { Room, Booking, BlockedDate, Enquiry, Settings, PricingRule } from "./types";
+import {
+  Room,
+  Booking,
+  BlockedDate,
+  Enquiry,
+  Settings,
+  PricingRule,
+  Service,
+} from "./types";
 import { mockDB } from "./mockData";
 import { findBookingConflict } from "./availability";
 
@@ -18,9 +26,9 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 const isSupabaseConfigured = Boolean(
   supabaseUrl &&
-    supabaseUrl !== "your-supabase-url" &&
-    supabaseAnonKey &&
-    supabaseAnonKey !== "your-supabase-anon-key"
+  supabaseUrl !== "your-supabase-url" &&
+  supabaseAnonKey &&
+  supabaseAnonKey !== "your-supabase-anon-key",
 );
 
 // Singleton instance to prevent "Multiple GoTrueClient instances" warnings in browser context during Fast Refresh / HMR
@@ -41,7 +49,7 @@ const getSupabaseClient = (): SupabaseClient | null => {
             autoRefreshToken: true,
             detectSessionInUrl: true,
           },
-        }
+        },
       );
     }
     return globalForSupabase.supabaseClient;
@@ -51,11 +59,21 @@ const getSupabaseClient = (): SupabaseClient | null => {
   });
 };
 
+const isMissingServicesTableError = (error: unknown) => {
+  if (!error || typeof error !== "object") return false;
+  const maybeError = error as { code?: string; message?: string };
+  return (
+    maybeError.code === "PGRST205" ||
+    maybeError.message?.includes("public.services") ||
+    maybeError.message?.includes("Could not find the table 'public.services'")
+  );
+};
+
 export const supabase: SupabaseClient | null = getSupabaseClient();
 
 if (!isSupabaseConfigured) {
   console.log(
-    "Database client: Supabase credentials not found or set to placeholder. Falling back to Local Mock Database."
+    "Database client: Supabase credentials not found or set to placeholder. Falling back to Local Mock Database.",
   );
 }
 
@@ -107,6 +125,100 @@ export const db = {
     return mockDB.saveRoom(room);
   },
 
+  // --- SERVICES ---
+  async getServices(): Promise<Service[]> {
+    if (supabase) {
+      try {
+        const { data, error } = await supabase
+          .from("services")
+          .select("*")
+          .order("sort_order", { ascending: true })
+          .order("created_at", { ascending: true });
+        if (error) {
+          throw error;
+        }
+        return data as Service[];
+      } catch (error) {
+        if (isMissingServicesTableError(error)) {
+          console.warn(
+            "Supabase services table is missing. Falling back to local mock services.",
+          );
+          return mockDB.getServices();
+        }
+        throw error;
+      }
+    }
+    return mockDB.getServices();
+  },
+
+  async getService(slug: string): Promise<Service | undefined> {
+    if (supabase) {
+      try {
+        const { data, error } = await supabase
+          .from("services")
+          .select("*")
+          .eq("slug", slug)
+          .maybeSingle();
+        if (error) {
+          throw error;
+        }
+        return data ? (data as Service) : undefined;
+      } catch (error) {
+        if (isMissingServicesTableError(error)) {
+          return mockDB.getService(slug);
+        }
+        throw error;
+      }
+    }
+    return mockDB.getService(slug);
+  },
+
+  async saveService(service: Service): Promise<Service> {
+    if (supabase) {
+      try {
+        const { data, error } = await supabase
+          .from("services")
+          .upsert(service)
+          .select()
+          .single();
+        if (error) {
+          throw error;
+        }
+        return data as Service;
+      } catch (error) {
+        if (isMissingServicesTableError(error)) {
+          console.warn(
+            "Supabase services table is missing. Saving service to local mock database instead.",
+          );
+          return mockDB.saveService(service);
+        }
+        throw error;
+      }
+    }
+    return mockDB.saveService(service);
+  },
+
+  async deleteService(id: string): Promise<void> {
+    if (supabase) {
+      try {
+        const { error } = await supabase.from("services").delete().eq("id", id);
+        if (error) {
+          throw error;
+        }
+        return;
+      } catch (error) {
+        if (isMissingServicesTableError(error)) {
+          console.warn(
+            "Supabase services table is missing. Deleting service from local mock database instead.",
+          );
+          return mockDB.deleteService(id);
+        }
+        throw error;
+      }
+    }
+    return mockDB.deleteService(id);
+  },
+
   async uploadRoomPhoto(file: File): Promise<string> {
     if (supabase) {
       try {
@@ -125,7 +237,10 @@ export const db = {
             .from("room-photos")
             .getPublicUrl(filePath);
           if (publicUrlData?.publicUrl) {
-            console.log("Photo successfully uploaded to Supabase Storage:", publicUrlData.publicUrl);
+            console.log(
+              "Photo successfully uploaded to Supabase Storage:",
+              publicUrlData.publicUrl,
+            );
             return publicUrlData.publicUrl;
           }
         }
@@ -374,7 +489,10 @@ export const db = {
     checkIn: string,
     checkOut: string,
     basePrice: number,
-  ): Promise<{ total: number; breakdown: { date: string; price: number; rule?: PricingRule }[] }> {
+  ): Promise<{
+    total: number;
+    breakdown: { date: string; price: number; rule?: PricingRule }[];
+  }> {
     const rules = await this.getPricingRules(roomId);
     const start = new Date(checkIn);
     const end = new Date(checkOut);
@@ -386,9 +504,7 @@ export const db = {
       const applicableRule = rules
         .filter(
           (r) =>
-            r.is_active &&
-            r.start_date <= dateStr &&
-            r.end_date >= dateStr,
+            r.is_active && r.start_date <= dateStr && r.end_date >= dateStr,
         )
         .sort((a, b) => b.priority - a.priority)[0];
 

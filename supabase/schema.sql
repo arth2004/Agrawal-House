@@ -29,6 +29,32 @@ create policy "Allow admins full control of rooms" on public.rooms
   for all using (auth.role() = 'service_role' or auth.uid() is not null);
 
 
+-- 1b. Services Table
+create table if not exists public.services (
+  id uuid default gen_random_uuid() primary key,
+  slug text not null unique,
+  name text not null,
+  short_description text not null,
+  icon text not null default 'Sparkles',
+  cover_image text not null default '',
+  gallery jsonb not null default '[]'::jsonb,
+  sections jsonb not null default '[]'::jsonb,
+  sort_order integer not null default 0,
+  status text not null default 'active', -- 'active' or 'inactive'
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+alter table public.services enable row level security;
+
+-- Policy: Everyone can read active services
+create policy "Allow public read of active services" on public.services
+  for select using (status = 'active');
+
+-- Policy: Admins can do everything
+create policy "Allow admins full control of services" on public.services
+  for all using (auth.role() = 'service_role' or auth.uid() is not null);
+
+
 -- 2. Blocked Dates Table
 create table if not exists public.blocked_dates (
   id uuid default gen_random_uuid() primary key,

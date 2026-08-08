@@ -6,7 +6,68 @@ export interface Room {
   base_price: number;
   amenities: string[];
   photos: string[];
-  status: 'active' | 'inactive';
+  status: "active" | "inactive";
+  created_at?: string;
+}
+
+export interface ServiceFaq {
+  question: string;
+  answer: string;
+}
+
+export interface ServicePricingItem {
+  label: string;
+  value?: string;
+  note?: string;
+}
+
+export interface ServiceInfoItem {
+  label: string;
+  value: string;
+  detail?: string;
+}
+
+export interface ServiceSection {
+  id: string;
+  type:
+    | "rich-text"
+    | "list"
+    | "gallery"
+    | "faq"
+    | "pricing"
+    | "info-grid"
+    | "cta"
+    | "custom";
+  title?: string;
+  description?: string;
+  body?: string;
+  items?: string[];
+  faqs?: ServiceFaq[];
+  pricingItems?: ServicePricingItem[];
+  infoItems?: ServiceInfoItem[];
+  images?: string[];
+  primaryCta?: {
+    label: string;
+    href: string;
+  };
+  secondaryCta?: {
+    label: string;
+    href: string;
+  };
+  customFields?: Record<string, string>;
+}
+
+export interface Service {
+  id: string;
+  slug: string;
+  name: string;
+  short_description: string;
+  icon: string;
+  cover_image: string;
+  gallery: string[];
+  sections: ServiceSection[];
+  sort_order: number;
+  status: "active" | "inactive" | "paused";
   created_at?: string;
 }
 
@@ -28,9 +89,9 @@ export interface Booking {
   check_in: string; // YYYY-MM-DD
   check_out: string; // YYYY-MM-DD
   num_guests: number;
-  status: 'pending' | 'confirmed' | 'cancelled' | 'completed';
-  payment_method: 'online' | 'at_property';
-  payment_status: 'unpaid' | 'partial' | 'paid';
+  status: "pending" | "confirmed" | "cancelled" | "completed";
+  payment_method: "online" | "at_property";
+  payment_status: "unpaid" | "partial" | "paid";
   amount_total: number;
   razorpay_payment_id?: string;
   notes?: string;
@@ -43,7 +104,7 @@ export interface Enquiry {
   name: string;
   contact: string;
   message: string;
-  status: 'new' | 'responded';
+  status: "new" | "responded";
   created_at?: string;
 }
 
@@ -60,8 +121,8 @@ export interface PricingRule {
 }
 
 export interface Settings {
-  booking_mode: 'instant' | 'manual_approval';
-  payment_options: ('online' | 'at_property')[];
+  booking_mode: "instant" | "manual_approval";
+  payment_options: ("online" | "at_property")[];
   contact_details: {
     phone: string;
     email: string;

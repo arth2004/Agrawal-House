@@ -22,7 +22,7 @@ export default async function RoomsPage() {
         <span style={{ color: 'var(--primary)', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.15em', fontSize: '0.85rem' }}>
           Accommodations
         </span>
-        <h1 style={{ fontSize: '3rem', marginTop: '8px', marginBottom: '16px' }}>Our Rooms & Cottages</h1>
+        <h1 style={{ fontSize: '3rem', marginTop: '8px', marginBottom: '16px' }}>Our Rooms</h1>
         <p style={{ color: 'var(--text-secondary)', maxWidth: '600px', margin: '0 auto', fontSize: '1.1rem', lineHeight: '1.6' }}>
           Each room has been individually curated to provide a quiet, relaxing space. Choose a suite overlooking our orchard, or a cozy cottage built with earth plaster.
         </p>
