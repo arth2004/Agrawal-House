@@ -252,3 +252,12 @@ export async function POST(request: Request) {
     );
   }
 }
+
+/**
+ * GET /api/calendar/sync
+ * Allows automated cron services (Vercel Cron, cron-job.org, Upstash) to trigger sync.
+ */
+export async function GET(request: Request) {
+  return POST(request);
+}
+
