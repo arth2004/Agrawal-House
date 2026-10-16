@@ -108,7 +108,9 @@ export default async function RoomDetailPage({ params }: RoomDetailPageProps) {
               <span
                 style={{ color: "var(--text-secondary)", fontSize: "0.95rem" }}
               >
-                Accommodates up to <strong>{room.max_guests} Guests</strong>
+                {room.name.toLowerCase().includes("family") || room.max_guests >= 4
+                  ? "Accommodates 4 Guests (up to 5 with extra mattress @ ₹300/night)"
+                  : `Accommodates up to ${room.max_guests} Guests`}
               </span>
             </div>
           </div>

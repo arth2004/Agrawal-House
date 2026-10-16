@@ -102,7 +102,11 @@ function BookingForm() {
     calculatePrice();
   }, [room, checkIn, checkOut, numNights]);
 
-  const totalPrice = dynamicTotal || (room ? numNights * room.base_price : 0);
+  const isFamilyRoom = room ? (room.name.toLowerCase().includes("family") || room.max_guests >= 4) : false;
+  const hasExtraGuest = isFamilyRoom && guestsCount === 5;
+  const extraGuestChargeTotal = hasExtraGuest ? 300 * numNights : 0;
+  const baseRoomTotal = dynamicTotal || (room ? numNights * room.base_price : 0);
+  const totalPrice = baseRoomTotal + extraGuestChargeTotal;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -116,6 +120,10 @@ function BookingForm() {
     setIsSubmitting(true);
     setError("");
 
+    const finalNotes = hasExtraGuest
+      ? (notes ? `${notes} | [Extra 5th guest + mattress requested @ ₹300/night]` : "[Extra 5th guest + mattress requested @ ₹300/night]")
+      : notes;
+
     try {
       const result = await db.createBooking({
         room_id: roomId,
@@ -127,7 +135,7 @@ function BookingForm() {
         num_guests: guestsCount,
         payment_method: paymentMethod,
         amount_total: totalPrice,
-        notes: notes,
+        notes: finalNotes,
       });
 
       setBookingSuccess(result);
@@ -729,8 +737,8 @@ function BookingForm() {
                       marginTop: "4px",
                     }}
                   >
-                    <span>Subtotal</span>
-                    <span>₹{totalPrice}</span>
+                    <span>Room Charges</span>
+                    <span>₹{baseRoomTotal}</span>
                   </div>
                 </>
               ) : (
@@ -744,9 +752,27 @@ function BookingForm() {
                   <span>
                     ₹{room.base_price} x {numNights} nights
                   </span>
-                  <span>₹{totalPrice}</span>
+                  <span>₹{baseRoomTotal}</span>
                 </div>
               )}
+
+              {hasExtraGuest && (
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    fontSize: "0.88rem",
+                    color: "#92400E",
+                    backgroundColor: "#FEF3C7",
+                    padding: "8px 10px",
+                    borderRadius: "4px",
+                  }}
+                >
+                  <span>Extra 5th Guest (+Mattress)</span>
+                  <span style={{ fontWeight: "600" }}>+₹{extraGuestChargeTotal} (₹300 x {numNights}n)</span>
+                </div>
+              )}
+
               <div
                 style={{
                   display: "flex",

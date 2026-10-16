@@ -107,14 +107,20 @@ export default function BookingWidget({
     }, 600); // Small realistic delay for UI animation feel
   };
 
+  const isFamilyRoom = roomName.toLowerCase().includes('family') || maxGuests >= 4;
+  const effectiveMaxGuests = isFamilyRoom ? 5 : maxGuests;
+  const hasExtraGuest = isFamilyRoom && guests === 5;
+  const extraGuestChargePerNight = hasExtraGuest ? 300 : 0;
+  const baseTotal = numNights * basePrice;
+  const extraGuestTotal = numNights * extraGuestChargePerNight;
+  const totalPrice = baseTotal + extraGuestTotal;
+
   const handleBookNow = () => {
     if (availabilityStatus !== 'available') return;
     
     // Redirect to Checkout form
     router.push(`/book?room_id=${roomId}&check_in=${checkIn}&check_out=${checkOut}&guests=${guests}`);
   };
-
-  const totalPrice = numNights * basePrice;
 
   return (
     <div
@@ -134,6 +140,11 @@ export default function BookingWidget({
           <span style={{ fontSize: '2rem', fontWeight: '700', color: 'var(--primary)' }}>₹{basePrice}</span>
           <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>/ night</span>
         </div>
+        {isFamilyRoom && (
+          <div style={{ marginTop: '8px', display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.78rem', padding: '4px 10px', borderRadius: '4px', backgroundColor: '#FEF3C7', color: '#92400E', fontWeight: '500' }}>
+            <span>Accommodates 4 guests (up to 5 with extra mattress @ ₹300/night)</span>
+          </div>
+        )}
       </div>
 
       <form onSubmit={handleCheckAvailability} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -198,9 +209,9 @@ export default function BookingWidget({
               backgroundColor: '#FFFFFF',
             }}
           >
-            {Array.from({ length: maxGuests }, (_, i) => i + 1).map((n) => (
+            {Array.from({ length: effectiveMaxGuests }, (_, i) => i + 1).map((n) => (
               <option key={n} value={n}>
-                {n} Guest{n > 1 ? 's' : ''}
+                {n} Guest{n > 1 ? 's' : ''} {isFamilyRoom && n === 5 ? '(+₹300/night for extra person & mattress)' : ''}
               </option>
             ))}
           </select>
@@ -246,8 +257,14 @@ export default function BookingWidget({
             <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '16px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '0.95rem' }}>
                 <span>₹{basePrice} x {numNights} night{numNights > 1 ? 's' : ''}</span>
-                <span>₹{totalPrice}</span>
+                <span>₹{baseTotal}</span>
               </div>
+              {hasExtraGuest && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '0.9rem', color: '#B45309' }}>
+                  <span>Extra Person (5th guest + mattress): ₹300 x {numNights} night{numNights > 1 ? 's' : ''}</span>
+                  <span>+₹{extraGuestTotal}</span>
+                </div>
+              )}
               <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: '700', fontSize: '1.1rem', marginTop: '12px', borderTop: '1px dashed var(--border-color)', paddingTop: '12px' }}>
                 <span>Total Amount</span>
                 <span>₹{totalPrice}</span>

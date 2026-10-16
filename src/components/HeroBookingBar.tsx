@@ -160,8 +160,13 @@ export default function HeroBookingBar() {
             <option value="1">1 Adult</option>
             <option value="2">2 Adults (Couple)</option>
             <option value="3">3 Guests (Small Family)</option>
-            <option value="4">4 Guests (Family Suite)</option>
-            <option value="5">5+ Guests (Full House/Group)</option>
+            <option value="4">4 Guests (Family Bedroom)</option>
+            <option value="5">5 Guests (Family Suite + Extra Bed)</option>
+            <option value="6">6 Guests (Group / 2 Rooms)</option>
+            <option value="8">8 Guests (2 Family Rooms)</option>
+            <option value="10">10 Guests (Large Family Group)</option>
+            <option value="12">12-14 Guests (Entire Homestay Buyout)</option>
+            <option value="15">15+ Guests (Full House + Concierge)</option>
           </select>
         </div>
 

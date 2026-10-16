@@ -32,7 +32,11 @@ export function buildBookingMessage(details: WhatsAppBookingDetails): string {
   if (details.checkIn) lines.push(`Check-in: ${details.checkIn}`);
   if (details.checkOut) lines.push(`Check-out: ${details.checkOut}`);
   if (details.guests) {
-    lines.push(`Guests: ${details.guests}`);
+    if (details.guests === 5 && (details.roomName?.toLowerCase().includes("family") || !details.roomName)) {
+      lines.push(`Guests: 5 (4 guests + 1 extra person with mattress @ ₹300/night)`);
+    } else {
+      lines.push(`Guests: ${details.guests}`);
+    }
   }
   if (details.nights) {
     lines.push(`Duration: ${details.nights} night${details.nights > 1 ? "s" : ""}`);

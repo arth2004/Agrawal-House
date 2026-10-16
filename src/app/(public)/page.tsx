@@ -497,10 +497,14 @@ export default async function HomePage() {
                     color: "var(--text-muted)",
                     borderTop: "1px solid var(--border-color)",
                     paddingTop: "14px",
+                    flexWrap: "wrap",
                   }}
                 >
                   <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                    <Users size={15} style={{ color: "var(--primary)" }} /> Max {room.max_guests} guests
+                    <Users size={15} style={{ color: "var(--primary)" }} />{" "}
+                    {room.name.toLowerCase().includes("family") || room.max_guests >= 4
+                      ? "4 Guests (+1 extra person @ ₹300/night)"
+                      : `Max ${room.max_guests} guests`}
                   </span>
                 </div>
 
