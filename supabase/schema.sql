@@ -62,6 +62,9 @@ create table if not exists public.blocked_dates (
   start_date date not null,
   end_date date not null,
   reason text,
+  source text not null default 'manual', -- 'manual', 'ical'
+  ical_uid text,
+  ical_config_id uuid,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null,
   constraint check_dates check (start_date <= end_date)
 );
@@ -190,6 +193,30 @@ create policy "Allow public read of settings" on public.settings
 create policy "Allow admins full control of settings" on public.settings
   for all using (auth.role() = 'service_role' or auth.uid() is not null);
 
+
+-- 7. iCal Sync Configurations Table
+create table if not exists public.ical_sync_configs (
+  id uuid default gen_random_uuid() primary key,
+  room_id uuid references public.rooms(id) on delete cascade not null,
+  platform text not null default 'other', -- 'makemytrip', 'airbnb', 'booking.com', 'other'
+  ical_url text not null,
+  label text not null,
+  is_active boolean not null default true,
+  last_synced_at timestamp with time zone,
+  last_error text,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+alter table public.ical_sync_configs enable row level security;
+
+-- Policy: Admin access only
+create policy "Allow admins full control of ical_sync_configs" on public.ical_sync_configs
+  for all using (auth.role() = 'service_role' or auth.uid() is not null);
+
+-- Foreign key link for blocked_dates.ical_config_id
+alter table public.blocked_dates
+  add constraint fk_blocked_dates_ical_config
+  foreign key (ical_config_id) references public.ical_sync_configs(id) on delete cascade;
 
 -- Insert initial configuration
 insert into public.settings (key, value) values

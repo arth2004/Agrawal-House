@@ -77,6 +77,21 @@ export interface BlockedDate {
   start_date: string; // YYYY-MM-DD
   end_date: string; // YYYY-MM-DD
   reason?: string;
+  source?: "manual" | "ical"; // Where this block came from
+  ical_uid?: string; // UID from the iCal event (for tracking)
+  ical_config_id?: string; // Which sync config created this block
+  created_at?: string;
+}
+
+export interface IcalSyncConfig {
+  id: string;
+  room_id: string;
+  platform: string; // "makemytrip" | "airbnb" | "booking.com" | "other"
+  ical_url: string; // The .ics export URL from MMT/Airbnb
+  label: string; // Display name, e.g. "MakeMyTrip - Deluxe Room"
+  is_active: boolean;
+  last_synced_at?: string; // ISO timestamp of last successful sync
+  last_error?: string; // Last sync error message (if any)
   created_at?: string;
 }
 

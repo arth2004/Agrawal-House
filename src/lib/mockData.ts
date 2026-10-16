@@ -6,6 +6,7 @@ import {
   Settings,
   PricingRule,
   Service,
+  IcalSyncConfig,
 } from "./types";
 import { findBookingConflict } from "./availability";
 
@@ -15,37 +16,91 @@ const createSectionId = (prefix: string) =>
 // Default mock database state
 export const DEFAULT_ROOMS: Room[] = [
   {
-    id: "room-family",
-    name: "Family Room",
+    id: "30eab39c-e0fd-4855-957e-046d72326cb1",
+    name: "Double bedroom 1",
     description:
-      "A spacious modern room designed for family comfort. Styled with contemporary aesthetics, it features comfortable bedding and modern private washrooms.",
-    max_guests: 4,
-    base_price: 3500,
+      "A warm, elegantly decorated room ideal for couples or solo travelers. Features plush bedding, air conditioning, and an attached modern bathroom.",
+    max_guests: 2,
+    base_price: 2000,
     amenities: [
       "Air Conditioning",
       "High-Speed Wi-Fi",
+      "Queen Bed",
+      "Geyser",
+      "Private Bath",
+    ],
+    photos: [
+      "/images/bed-2a.jpg",
+      "https://rlepvvsjxbjrzwsgzqke.supabase.co/storage/v1/object/public/room-photos/1786131535282-x9j2r0t.jpg",
+    ],
+    status: "active",
+  },
+  {
+    id: "30eab39c-e0fd-4855-957e-046d72326cb2",
+    name: "Double bedroom 2",
+    description:
+      "A warm, elegantly decorated room ideal for couples or solo travelers. Features plush bedding, air conditioning, and an attached modern bathroom.",
+    max_guests: 2,
+    base_price: 2000,
+    amenities: [
+      "Air Conditioning",
+      "High-Speed Wi-Fi",
+      "Queen Bed",
+      "Geyser",
+      "Private Bath",
+    ],
+    photos: [
+      "/images/bed-2a.jpg",
+      "https://rlepvvsjxbjrzwsgzqke.supabase.co/storage/v1/object/public/room-photos/1786131535282-x9j2r0t.jpg",
+    ],
+    status: "active",
+  },
+  {
+    id: "c48138d2-b759-4440-972e-8b5d2b7b173a",
+    name: "Family bedroom 1",
+    description:
+      "A spacious modern room designed for family comfort with additional space for up to 4 guests. Features comfortable bedding and modern private washroom.",
+    max_guests: 4,
+    base_price: 3000,
+    amenities: [
+      "Air Conditioning",
+      "High-Speed Wi-Fi",
+      "King Bed",
       "Geyser",
       "Tea/Coffee Maker",
       "Spacious Bath",
     ],
-    photos: ["/images/bed-3a (3).jpg"],
+    photos: [
+      "https://rlepvvsjxbjrzwsgzqke.supabase.co/storage/v1/object/public/room-photos/1786131873013-44uanus.jpg",
+      "https://rlepvvsjxbjrzwsgzqke.supabase.co/storage/v1/object/public/room-photos/1786131872488-rcc6twn.jpg",
+      "/images/bed-3a.jpg",
+      "https://rlepvvsjxbjrzwsgzqke.supabase.co/storage/v1/object/public/room-photos/1786131860035-jjb9nnt.jpg",
+      "https://rlepvvsjxbjrzwsgzqke.supabase.co/storage/v1/object/public/room-photos/1786131872784-7iys3vq.jpg",
+    ],
     status: "active",
   },
   {
-    id: "room-double",
-    name: "Double Room",
+    id: "c48138d2-b759-4440-972e-8b5d2b7b173b",
+    name: "Family bedroom 2",
     description:
-      "A warm, elegantly decorated room ideal for couples or solo travelers. Features a plush double bed, ambient traditional lighting, and an attached modern bathroom.",
-    max_guests: 2,
-    base_price: 2500,
+      "A spacious modern room designed for family comfort with additional space for up to 4 guests. Features comfortable bedding and modern private washroom.",
+    max_guests: 4,
+    base_price: 3000,
     amenities: [
       "Air Conditioning",
       "High-Speed Wi-Fi",
+      "King Bed",
       "Geyser",
-      "Queen Bed",
-      "Private Bath",
+      "Tea/Coffee Maker",
+      "Spacious Bath",
     ],
-    photos: ["/images/bed-1a.jpg"],
+    photos: [
+      "https://rlepvvsjxbjrzwsgzqke.supabase.co/storage/v1/object/public/room-photos/1786131873013-44uanus.jpg",
+      "https://rlepvvsjxbjrzwsgzqke.supabase.co/storage/v1/object/public/room-photos/1786131872488-rcc6twn.jpg",
+      "/images/bed-3a.jpg",
+      "https://rlepvvsjxbjrzwsgzqke.supabase.co/storage/v1/object/public/room-photos/1786131860035-jjb9nnt.jpg",
+      "https://rlepvvsjxbjrzwsgzqke.supabase.co/storage/v1/object/public/room-photos/1786131872784-7iys3vq.jpg",
+    ],
     status: "active",
   },
 ];
@@ -341,6 +396,7 @@ type MockDbState = {
   enquiries: Enquiry[];
   settings: Settings;
   pricingRules: PricingRule[];
+  icalSyncConfigs: IcalSyncConfig[];
 };
 
 const STORAGE_KEYS = {
@@ -350,6 +406,7 @@ const STORAGE_KEYS = {
   bookings: "ah_bookings",
   enquiries: "ah_enquiries",
   settings: "ah_settings",
+  icalSyncConfigs: "ah_ical_sync_configs",
 } as const;
 
 const createDefaultState = (): MockDbState => ({
@@ -360,6 +417,7 @@ const createDefaultState = (): MockDbState => ({
   enquiries: [],
   settings: { ...DEFAULT_SETTINGS },
   pricingRules: [],
+  icalSyncConfigs: [],
 });
 
 // In-Memory state for Server Side rendering mock database
@@ -371,6 +429,7 @@ class MockDB {
   private enquiries: Enquiry[] = [];
   private settings: Settings = { ...DEFAULT_SETTINGS };
   private pricingRules: PricingRule[] = [];
+  private icalSyncConfigs: IcalSyncConfig[] = [];
 
   constructor() {
     const defaults = createDefaultState();
@@ -381,6 +440,7 @@ class MockDB {
     this.enquiries = defaults.enquiries;
     this.settings = defaults.settings;
     this.pricingRules = defaults.pricingRules;
+    this.icalSyncConfigs = defaults.icalSyncConfigs;
   }
 
   private isBrowser() {
@@ -396,6 +456,7 @@ class MockDB {
       enquiries: this.enquiries,
       settings: this.settings,
       pricingRules: this.pricingRules,
+      icalSyncConfigs: this.icalSyncConfigs,
     };
   }
 
@@ -407,6 +468,7 @@ class MockDB {
     this.enquiries = state.enquiries;
     this.settings = state.settings;
     this.pricingRules = state.pricingRules;
+    this.icalSyncConfigs = state.icalSyncConfigs;
   }
 
   private async loadState() {
@@ -458,6 +520,10 @@ class MockDB {
         this.pricingRules = storedPricingRules
           ? JSON.parse(storedPricingRules)
           : [];
+        const storedIcalConfigs = localStorage.getItem(STORAGE_KEYS.icalSyncConfigs);
+        this.icalSyncConfigs = storedIcalConfigs
+          ? JSON.parse(storedIcalConfigs)
+          : [];
       } catch (e) {
         console.error("Error loading mock db from localStorage", e);
       }
@@ -486,6 +552,7 @@ class MockDB {
           enquiries: parsed.enquiries ?? [],
           settings: parsed.settings ?? { ...DEFAULT_SETTINGS },
           pricingRules: parsed.pricingRules ?? [],
+          icalSyncConfigs: parsed.icalSyncConfigs ?? [],
         });
         await this.saveState();
       } else {
@@ -497,6 +564,7 @@ class MockDB {
           enquiries: parsed.enquiries ?? [],
           settings: parsed.settings ?? { ...DEFAULT_SETTINGS },
           pricingRules: parsed.pricingRules ?? [],
+          icalSyncConfigs: parsed.icalSyncConfigs ?? [],
         });
       }
     } catch (e) {
@@ -532,6 +600,10 @@ class MockDB {
         localStorage.setItem(
           "ah_pricing_rules",
           JSON.stringify(this.pricingRules),
+        );
+        localStorage.setItem(
+          STORAGE_KEYS.icalSyncConfigs,
+          JSON.stringify(this.icalSyncConfigs),
         );
       } catch (e) {
         console.error("Error saving mock db to localStorage", e);
@@ -616,8 +688,11 @@ class MockDB {
   }
 
   // Blocked Dates
-  async getBlockedDates(): Promise<BlockedDate[]> {
+  async getBlockedDates(roomId?: string): Promise<BlockedDate[]> {
     await this.loadState();
+    if (roomId) {
+      return this.blockedDates.filter((b) => b.room_id === roomId);
+    }
     return this.blockedDates;
   }
 
@@ -803,6 +878,69 @@ class MockDB {
     this.settings = settings;
     await this.saveState();
     return this.settings;
+  }
+
+  // iCal Sync Configs
+  async getIcalSyncConfigs(roomId?: string): Promise<IcalSyncConfig[]> {
+    await this.loadState();
+    if (roomId) {
+      return this.icalSyncConfigs.filter((c) => c.room_id === roomId);
+    }
+    return this.icalSyncConfigs;
+  }
+
+  async addIcalSyncConfig(
+    config: Omit<IcalSyncConfig, "id">,
+  ): Promise<IcalSyncConfig> {
+    await this.loadState();
+    const newConfig: IcalSyncConfig = {
+      ...config,
+      id: `ical-${Math.random().toString(36).substr(2, 9)}`,
+      created_at: new Date().toISOString(),
+    };
+    this.icalSyncConfigs.push(newConfig);
+    await this.saveState();
+    return newConfig;
+  }
+
+  async updateIcalSyncConfig(
+    id: string,
+    updates: Partial<Omit<IcalSyncConfig, "id">>,
+  ): Promise<IcalSyncConfig | undefined> {
+    await this.loadState();
+    const index = this.icalSyncConfigs.findIndex((c) => c.id === id);
+    if (index >= 0) {
+      this.icalSyncConfigs[index] = {
+        ...this.icalSyncConfigs[index],
+        ...updates,
+      };
+      await this.saveState();
+      return this.icalSyncConfigs[index];
+    }
+    return undefined;
+  }
+
+  async deleteIcalSyncConfig(id: string): Promise<void> {
+    await this.loadState();
+    this.icalSyncConfigs = this.icalSyncConfigs.filter((c) => c.id !== id);
+    // Also remove all blocked dates created by this config
+    this.blockedDates = this.blockedDates.filter(
+      (b) => b.ical_config_id !== id,
+    );
+    await this.saveState();
+  }
+
+  async getBlockedDatesByIcalConfig(configId: string): Promise<BlockedDate[]> {
+    await this.loadState();
+    return this.blockedDates.filter((b) => b.ical_config_id === configId);
+  }
+
+  async deleteBlockedDatesByIcalConfig(configId: string): Promise<void> {
+    await this.loadState();
+    this.blockedDates = this.blockedDates.filter(
+      (b) => b.ical_config_id !== configId,
+    );
+    await this.saveState();
   }
 }
 

@@ -206,7 +206,7 @@ export default function PublicLayout({
           <div>
             <h3 style={{ color: '#FFFFFF', marginBottom: '20px', fontSize: '1.4rem' }}>Agrawal House</h3>
             <p style={{ color: '#A8A29E', fontSize: '0.95rem', lineHeight: '1.6', marginBottom: '16px' }}>
-              A gorgeous boutique homestay where tradition meets modern comfort. Set in the heart of Ujjain, we invite you to experience hospitality that feels like home.
+              A gorgeous homestay where tradition meets modern comfort. Set in the heart of Ujjain, we invite you to experience hospitality that feels like home.
             </p>
           </div>
 

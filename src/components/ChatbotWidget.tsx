@@ -59,7 +59,7 @@ export default function ChatbotWidget() {
     }
 
     if (cleanQuery.includes('room') || cleanQuery.includes('rate') || cleanQuery.includes('price') || cleanQuery.includes('cost') || cleanQuery.includes('family') || cleanQuery.includes('double') || cleanQuery.includes('stay') || cleanQuery.includes('rent')) {
-      return 'We offer two premium room types:\n\n1. Family Room (Silver Category): Max 4 guests, base price is ₹3,500/night. Features high wood-beam ceilings and spacious layout.\n2. Double Room (Silver Category): Max 2 guests, base price is ₹2,500/night. Cozy layout with a queen bed.\n\nAll rooms are air-conditioned, clean, and feature attached modern bathrooms with geysers.';
+      return 'We offer 4 distinct bedrooms across two categories:\n\n1. Double bedroom 1 & Double bedroom 2: Max 2 guests each, base price ₹2,000/night. Cozy layout with plush bedding, AC, and attached modern bathroom.\n2. Family bedroom 1 & Family bedroom 2: Max 4 guests each, base price ₹3,000/night. Spacious layout with high wood-beam ceilings, king bed, AC, and attached modern bathroom with geyser.\n\nAll rooms are fully air-conditioned, clean, and feature high-speed Wi-Fi.';
     }
 
     if (cleanQuery.includes('parking') || cleanQuery.includes('car') || cleanQuery.includes('bike') || cleanQuery.includes('vehicle')) {

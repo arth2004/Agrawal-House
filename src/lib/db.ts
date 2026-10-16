@@ -7,8 +7,9 @@ import {
   Settings,
   PricingRule,
   Service,
+  IcalSyncConfig,
 } from "./types";
-import { mockDB } from "./mockData";
+import { mockDB, DEFAULT_ROOMS } from "./mockData";
 import { findBookingConflict } from "./availability";
 
 type BookingWithRoomName = Booking & {
@@ -69,6 +70,24 @@ const isMissingServicesTableError = (error: unknown) => {
   );
 };
 
+const isMissingIcalTableError = (error: unknown) => {
+  if (!error || typeof error !== "object") return false;
+  const maybeError = error as { code?: string; message?: string };
+  return (
+    maybeError.code === "PGRST205" ||
+    maybeError.code === "PGRST204" ||
+    maybeError.code === "42P01" ||
+    maybeError.code === "42703" ||
+    maybeError.code === "42501" ||
+    maybeError.message?.includes("ical_sync_configs") ||
+    maybeError.message?.includes("ical_config_id") ||
+    maybeError.message?.includes("ical_uid") ||
+    maybeError.message?.includes("source") ||
+    maybeError.message?.includes("Could not find the table 'public.ical_sync_configs'") ||
+    maybeError.message?.includes("relation \"ical_sync_configs\" does not exist")
+  );
+};
+
 export const supabase: SupabaseClient | null = getSupabaseClient();
 
 if (!isSupabaseConfigured) {
@@ -83,29 +102,49 @@ export const db = {
   // --- ROOMS ---
   async getRooms(): Promise<Room[]> {
     if (supabase) {
-      const { data, error } = await supabase
-        .from("rooms")
-        .select("*")
-        .order("created_at", { ascending: false });
-      if (error) {
-        throw error;
+      try {
+        const { data, error } = await supabase
+          .from("rooms")
+          .select("*")
+          .order("name", { ascending: true });
+        if (error) {
+          throw error;
+        }
+        return (data as Room[]) || [];
+      } catch (err) {
+        console.warn("Supabase getRooms failed, using mockDB:", err);
+        return mockDB.getRooms();
       }
-      return data as Room[];
     }
     return mockDB.getRooms();
   },
 
   async getRoom(id: string): Promise<Room | undefined> {
     if (supabase) {
-      const { data, error } = await supabase
-        .from("rooms")
-        .select("*")
-        .eq("id", id)
-        .maybeSingle();
-      if (error) {
-        throw error;
+      try {
+        const { data, error } = await supabase
+          .from("rooms")
+          .select("*")
+          .eq("id", id)
+          .maybeSingle();
+        if (error) {
+          if (error.code === "22P02") {
+            return undefined;
+          }
+          throw error;
+        }
+        return data ? (data as Room) : undefined;
+      } catch (err: unknown) {
+        if (
+          typeof err === "object" &&
+          err &&
+          "code" in err &&
+          (err as { code: string }).code === "22P02"
+        ) {
+          return undefined;
+        }
+        throw err;
       }
-      return data ? (data as Room) : undefined;
     }
     return mockDB.getRoom(id);
   },
@@ -261,67 +300,96 @@ export const db = {
 
   // --- BLOCKED DATES ---
   async getBlockedDates(roomId?: string): Promise<BlockedDate[]> {
+    let supabaseDates: BlockedDate[] = [];
     if (supabase) {
-      let query = supabase.from("blocked_dates").select("*");
-      if (roomId) {
-        query = query.eq("room_id", roomId);
+      try {
+        let query = supabase.from("blocked_dates").select("*");
+        if (roomId) {
+          query = query.eq("room_id", roomId);
+        }
+        const { data, error } = await query;
+        if (!error && data) {
+          supabaseDates = data as BlockedDate[];
+        }
+      } catch {
+        // Fall through to mockDB
       }
-      const { data, error } = await query;
-      if (error) {
-        throw error;
-      }
-      return data as BlockedDate[];
     }
-    const dates = await mockDB.getBlockedDates();
-    return roomId ? dates.filter((d) => d.room_id === roomId) : dates;
+    const mockDates = await mockDB.getBlockedDates(roomId);
+    const map = new Map<string, BlockedDate>();
+    supabaseDates.forEach((d) => map.set(d.id, d));
+    mockDates.forEach((d) => map.set(d.id, d));
+    return Array.from(map.values()).sort((a, b) =>
+      a.start_date.localeCompare(b.start_date),
+    );
   },
 
   async addBlockedDate(blocked: Omit<BlockedDate, "id">): Promise<BlockedDate> {
     if (supabase) {
-      const { data, error } = await supabase
-        .from("blocked_dates")
-        .insert(blocked)
-        .select()
-        .single();
-      if (error) {
-        throw error;
+      try {
+        const { data, error } = await supabase
+          .from("blocked_dates")
+          .insert(blocked)
+          .select()
+          .single();
+        if (error) {
+          throw error;
+        }
+        return data as BlockedDate;
+      } catch (error) {
+        console.warn("Supabase addBlockedDate fallback to local mock:", error);
+        return mockDB.addBlockedDate(blocked);
       }
-      return data as BlockedDate;
     }
     return mockDB.addBlockedDate(blocked);
   },
 
   async deleteBlockedDate(id: string): Promise<void> {
     if (supabase) {
-      const { error } = await supabase
-        .from("blocked_dates")
-        .delete()
-        .eq("id", id);
-      if (error) {
-        throw error;
+      try {
+        const { error } = await supabase
+          .from("blocked_dates")
+          .delete()
+          .eq("id", id);
+        if (error) {
+          throw error;
+        }
+        await mockDB.deleteBlockedDate(id);
+        return;
+      } catch (error) {
+        console.warn("Supabase deleteBlockedDate fallback to local mock:", error);
+        return mockDB.deleteBlockedDate(id);
       }
-      return;
     }
     return mockDB.deleteBlockedDate(id);
   },
 
   // --- BOOKINGS ---
   async getBookings(): Promise<Booking[]> {
+    let supabaseBookings: Booking[] = [];
     if (supabase) {
-      // In Supabase, do a join or separate fetch for room names
-      const { data, error } = await supabase
-        .from("bookings")
-        .select("*, rooms(name)")
-        .order("created_at", { ascending: false });
-      if (error) {
-        throw error;
+      try {
+        const { data, error } = await supabase
+          .from("bookings")
+          .select("*, rooms(name)")
+          .order("created_at", { ascending: false });
+        if (!error && data) {
+          supabaseBookings = (data as BookingWithRoomName[]).map((b) => ({
+            ...b,
+            room_name: b.rooms?.name || "Unknown Room",
+          })) as Booking[];
+        }
+      } catch {
+        // Fall through to mockDB
       }
-      return (data as BookingWithRoomName[]).map((b) => ({
-        ...b,
-        room_name: b.rooms?.name || "Unknown Room",
-      })) as Booking[];
     }
-    return mockDB.getBookings();
+    const mockBookings = await mockDB.getBookings();
+    const map = new Map<string, Booking>();
+    supabaseBookings.forEach((b) => map.set(b.id, b));
+    mockBookings.forEach((b) => map.set(b.id, b));
+    return Array.from(map.values()).sort((a, b) =>
+      (b.created_at || "").localeCompare(a.created_at || ""),
+    );
   },
 
   async createBooking(
@@ -635,5 +703,152 @@ export const db = {
       return settings;
     }
     return mockDB.saveSettings(settings);
+  },
+
+  // --- ICAL SYNC CONFIGS ---
+  async getIcalSyncConfigs(roomId?: string): Promise<IcalSyncConfig[]> {
+    if (supabase) {
+      try {
+        let query = supabase.from("ical_sync_configs").select("*");
+        if (roomId) {
+          query = query.eq("room_id", roomId);
+        }
+        const { data, error } = await query.order("created_at", { ascending: false });
+        if (error) {
+          throw error;
+        }
+        return data as IcalSyncConfig[];
+      } catch (error) {
+        if (isMissingIcalTableError(error)) {
+          console.warn(
+            "Supabase ical_sync_configs table is missing. Falling back to local mock storage.",
+          );
+          return mockDB.getIcalSyncConfigs(roomId);
+        }
+        throw error;
+      }
+    }
+    return mockDB.getIcalSyncConfigs(roomId);
+  },
+
+  async addIcalSyncConfig(
+    config: Omit<IcalSyncConfig, "id">,
+  ): Promise<IcalSyncConfig> {
+    if (supabase) {
+      try {
+        const { data, error } = await supabase
+          .from("ical_sync_configs")
+          .insert(config)
+          .select()
+          .single();
+        if (error) {
+          throw error;
+        }
+        return data as IcalSyncConfig;
+      } catch (error) {
+        if (isMissingIcalTableError(error)) {
+          return mockDB.addIcalSyncConfig(config);
+        }
+        throw error;
+      }
+    }
+    return mockDB.addIcalSyncConfig(config);
+  },
+
+  async updateIcalSyncConfig(
+    id: string,
+    updates: Partial<Omit<IcalSyncConfig, "id">>,
+  ): Promise<IcalSyncConfig | undefined> {
+    if (supabase) {
+      try {
+        const { data, error } = await supabase
+          .from("ical_sync_configs")
+          .update(updates)
+          .eq("id", id)
+          .select()
+          .maybeSingle();
+        if (error) {
+          throw error;
+        }
+        return data ? (data as IcalSyncConfig) : undefined;
+      } catch (error) {
+        if (isMissingIcalTableError(error)) {
+          return mockDB.updateIcalSyncConfig(id, updates);
+        }
+        throw error;
+      }
+    }
+    return mockDB.updateIcalSyncConfig(id, updates);
+  },
+
+  async deleteIcalSyncConfig(id: string): Promise<void> {
+    if (supabase) {
+      try {
+        // First delete all blocked dates created by this config
+        await supabase
+          .from("blocked_dates")
+          .delete()
+          .eq("ical_config_id", id);
+        // Then delete the config itself
+        const { error } = await supabase
+          .from("ical_sync_configs")
+          .delete()
+          .eq("id", id);
+        if (error) {
+          throw error;
+        }
+        return;
+      } catch (error) {
+        if (isMissingIcalTableError(error)) {
+          return mockDB.deleteIcalSyncConfig(id);
+        }
+        throw error;
+      }
+    }
+    return mockDB.deleteIcalSyncConfig(id);
+  },
+
+  async getBlockedDatesByIcalConfig(
+    configId: string,
+  ): Promise<BlockedDate[]> {
+    if (supabase) {
+      try {
+        const { data, error } = await supabase
+          .from("blocked_dates")
+          .select("*")
+          .eq("ical_config_id", configId);
+        if (error) {
+          throw error;
+        }
+        return data as BlockedDate[];
+      } catch (error) {
+        if (isMissingIcalTableError(error)) {
+          return mockDB.getBlockedDatesByIcalConfig(configId);
+        }
+        throw error;
+      }
+    }
+    return mockDB.getBlockedDatesByIcalConfig(configId);
+  },
+
+  async deleteBlockedDatesByIcalConfig(configId: string): Promise<void> {
+    if (supabase) {
+      try {
+        const { error } = await supabase
+          .from("blocked_dates")
+          .delete()
+          .eq("ical_config_id", configId);
+        if (error) {
+          throw error;
+        }
+        return;
+      } catch (error) {
+        if (isMissingIcalTableError(error)) {
+          return mockDB.deleteBlockedDatesByIcalConfig(configId);
+        }
+        throw error;
+      }
+    }
+    return mockDB.deleteBlockedDatesByIcalConfig(configId);
   },
 };
