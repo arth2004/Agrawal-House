@@ -1,6 +1,32 @@
 /* Agrawal House - Premium Global CSS Design Tokens & Styles */
 
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Outfit:wght@100..900&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-primary: var(--primary);
+  --color-primary-light: var(--primary-light);
+  --color-primary-hover: var(--primary-hover);
+  --color-secondary: var(--secondary);
+  --color-secondary-light: var(--secondary-light);
+  --color-secondary-hover: var(--secondary-hover);
+  --color-accent: var(--accent);
+  --color-accent-light: var(--accent-light);
+  --color-bg-primary: var(--bg-primary);
+  --color-bg-secondary: var(--bg-secondary);
+  --color-bg-card: var(--bg-card);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+  --color-border-color: var(--border-color);
+
+  --font-serif: 'Playfair Display', serif;
+  --font-sans: 'Outfit', sans-serif;
+
+  --radius-sm: 8px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+}
 
 :root {
   /* Fonts */
@@ -248,5 +274,31 @@ img {
   -ms-overflow-style: none;  /* IE and Edge */
   scrollbar-width: none;  /* Firefox */
 }
+
+/* Lightbox Interactive Hover Effects */
+.lightbox-btn-hover:hover {
+  background: rgba(255, 255, 255, 0.2) !important;
+  transform: scale(1.08) !important;
+}
+
+.lightbox-arrow-btn:hover {
+  background: rgba(198, 165, 117, 0.95) !important;
+  color: #080d0b !important;
+  border-color: #C6A575 !important;
+  box-shadow: 0 4px 18px rgba(198, 165, 117, 0.45) !important;
+  transform: translateY(-50%) scale(1.1) !important;
+}
+
+.lightbox-thumb-btn:hover {
+  opacity: 0.85 !important;
+}
+
+@media (max-width: 768px) {
+  .lightbox-arrow-btn {
+    width: 42px !important;
+    height: 42px !important;
+  }
+}
+
 
 
