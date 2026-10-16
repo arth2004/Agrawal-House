@@ -20,8 +20,11 @@ export interface RoomComboOption {
 export interface ComboSearchResult {
   availableRooms: Room[];
   combos: RoomComboOption[];
-  totalHomestayCapacity: number;
-  isGroupOverCapacity: boolean;
+  totalAvailableCapacity: number;
+  maxPropertyCapacity: number;
+  isLargeGroup: boolean; // guestsCount > maxPropertyCapacity (14+)
+  isDatesSoldOut: boolean; // 0 of 4 rooms available
+  isInsufficientCapacity: boolean; // available rooms cannot fit requested guests
 }
 
 /**
@@ -92,12 +95,20 @@ export function findBestRoomCombos(options: {
     isRoomAvailable(r.id, checkIn, checkOut, blockedDates, bookings),
   );
 
-  const totalHomestayCapacity = availableRooms.reduce(
+  const maxPropertyCapacity = activeRooms.reduce(
     (acc, r) => acc + getRoomCapacityInfo(r).maxCapacity,
     0,
   );
 
-  const isGroupOverCapacity = guestsCount > totalHomestayCapacity;
+  const totalAvailableCapacity = availableRooms.reduce(
+    (acc, r) => acc + getRoomCapacityInfo(r).maxCapacity,
+    0,
+  );
+
+  // Large group: only when requested guests exceed total homestay capacity (14 guests)
+  const isLargeGroup = guestsCount > maxPropertyCapacity;
+  const isDatesSoldOut = availableRooms.length === 0;
+  const isInsufficientCapacity = !isLargeGroup && !isDatesSoldOut && totalAvailableCapacity < guestsCount;
 
   // Generate all non-empty combinations of available rooms (up to 2^4 - 1 = 15 subsets)
   const allSubsets: Room[][] = [];
@@ -120,13 +131,13 @@ export function findBestRoomCombos(options: {
     const standardCap = subset.reduce((acc, r) => acc + getRoomCapacityInfo(r).baseCapacity, 0);
     const maxCap = subset.reduce((acc, r) => acc + getRoomCapacityInfo(r).maxCapacity, 0);
 
-    // If subset cannot fit guests even with extra beds, skip (unless guest count exceeds entire property)
-    if (maxCap < guestsCount && !isGroupOverCapacity) {
+    // If subset cannot fit guests even with extra beds, skip (unless large group exceeding 14 guests)
+    if (maxCap < guestsCount && !isLargeGroup) {
       continue;
     }
 
-    // If it's over-capacity (> max available), we will recommend the full buyout
-    if (isGroupOverCapacity && subset.length !== availableRooms.length) {
+    // If it's a large group (>14), we only recommend the full property buyout
+    if (isLargeGroup && subset.length !== availableRooms.length) {
       continue;
     }
 
@@ -206,7 +217,10 @@ export function findBestRoomCombos(options: {
   return {
     availableRooms,
     combos: finalCombos,
-    totalHomestayCapacity,
-    isGroupOverCapacity,
+    totalAvailableCapacity,
+    maxPropertyCapacity,
+    isLargeGroup,
+    isDatesSoldOut,
+    isInsufficientCapacity,
   };
 }

@@ -36,13 +36,13 @@ export default async function RoomsPage({ searchParams }: RoomsPageProps) {
   };
 
   return (
-    <div className="container animate-fade-in" style={{ padding: '40px 24px 80px 24px' }}>
-      <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-        <span style={{ color: 'var(--primary)', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.15em', fontSize: '0.85rem' }}>
+    <div className="container animate-fade-in" style={{ padding: '32px 16px 100px 16px' }}>
+      <div style={{ textAlign: 'center', marginBottom: '36px' }}>
+        <span style={{ color: 'var(--primary)', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.15em', fontSize: '0.8rem' }}>
           Accommodations & Group Stay
         </span>
-        <h1 style={{ fontSize: '3rem', marginTop: '8px', marginBottom: '16px' }}>Our Rooms & Group Combos</h1>
-        <p style={{ color: 'var(--text-secondary)', maxWidth: '680px', margin: '0 auto', fontSize: '1.05rem', lineHeight: '1.6' }}>
+        <h1 style={{ fontSize: 'clamp(2rem, 5vw, 3rem)', marginTop: '8px', marginBottom: '14px', lineHeight: 1.2 }}>Our Rooms & Group Combos</h1>
+        <p style={{ color: 'var(--text-secondary)', maxWidth: '680px', margin: '0 auto', fontSize: '1rem', lineHeight: '1.6' }}>
           Comfortable heritage stay located minutes from Mahakaleshwar Jyotirlinga. Browse individual rooms or use our Smart Combo Planner to find the best room combination for your family or group.
         </p>
       </div>

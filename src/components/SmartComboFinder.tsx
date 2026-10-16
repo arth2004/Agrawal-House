@@ -9,7 +9,6 @@ import {
   CheckCircle2,
   AlertCircle,
   ArrowRight,
-  ShieldCheck,
   BedDouble,
   Home,
   MessageCircle,
@@ -65,7 +64,14 @@ export default function SmartComboFinder({
     });
   }, [checkIn, checkOut, guestsCount, rooms, blockedDates, bookings, numNights]);
 
-  const { availableRooms, combos, isGroupOverCapacity } = searchResult;
+  const {
+    availableRooms,
+    combos,
+    totalAvailableCapacity,
+    isLargeGroup,
+    isDatesSoldOut,
+    isInsufficientCapacity,
+  } = searchResult;
 
   const handleWhatsAppCombo = (combo: RoomComboOption) => {
     const roomList = combo.rooms.map((r) => r.name).join(" + ");
@@ -113,19 +119,31 @@ export default function SmartComboFinder({
     window.open(url, "_blank");
   };
 
+  const handleDatesEnquiryWhatsApp = () => {
+    const lines = [
+      "Hello Agrawal House,",
+      "",
+      `I checked your website for stay from ${checkIn} to ${checkOut} for ${guestsCount} guests, but found rooms unavailable or partially booked.`,
+      "",
+      "Could you please check if there is any upcoming availability, cancellation, or flexible arrangement?",
+      "Thank you!",
+    ];
+
+    const url = `https://wa.me/${WHATSAPP_PHONE}?text=${encodeURIComponent(lines.join("\n"))}`;
+    window.open(url, "_blank");
+  };
+
   return (
     <div
+      className="smart-combo-container glassmorphism"
       style={{
         backgroundColor: "var(--bg-card)",
-        borderRadius: "var(--radius-lg)",
         border: "1px solid var(--border-color)",
         boxShadow: "var(--shadow-md)",
-        padding: "32px",
-        marginBottom: "48px",
       }}
     >
       {/* Header */}
-      <div style={{ marginBottom: "24px" }}>
+      <div style={{ marginBottom: "20px" }}>
         <div
           style={{
             display: "inline-flex",
@@ -135,19 +153,19 @@ export default function SmartComboFinder({
             borderRadius: "999px",
             backgroundColor: "rgba(194, 65, 12, 0.1)",
             color: "var(--primary)",
-            fontSize: "0.8rem",
+            fontSize: "0.75rem",
             fontWeight: "700",
             letterSpacing: "0.05em",
             textTransform: "uppercase",
             marginBottom: "8px",
           }}
         >
-          <Sparkles size={14} /> Smart Group Stay & Combo Finder
+          <Sparkles size={13} /> Smart Group Stay & Combo Finder
         </div>
-        <h2 style={{ fontSize: "1.9rem", margin: "4px 0 8px 0" }}>
+        <h2 style={{ fontSize: "clamp(1.4rem, 2.8vw, 1.9rem)", margin: "4px 0 8px 0", lineHeight: 1.25 }}>
           Find the Best Room Combination for Your Group
         </h2>
-        <p style={{ color: "var(--text-secondary)", fontSize: "0.98rem", maxWidth: "750px", lineHeight: "1.5" }}>
+        <p style={{ color: "var(--text-secondary)", fontSize: "0.92rem", maxWidth: "750px", lineHeight: "1.5" }}>
           Traveling with family or a group? Select your dates and guest count. Our smart system will instantly check live
           availability across all 4 rooms and calculate the most cost-effective room combination!
         </p>
@@ -157,13 +175,13 @@ export default function SmartComboFinder({
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))",
-          gap: "16px",
+          gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+          gap: "14px",
           backgroundColor: "var(--bg-secondary)",
-          padding: "20px",
+          padding: "16px",
           borderRadius: "var(--radius-md)",
           border: "1px solid var(--border-color)",
-          marginBottom: "28px",
+          marginBottom: "20px",
         }}
       >
         {/* Check-In */}
@@ -173,7 +191,7 @@ export default function SmartComboFinder({
               display: "flex",
               alignItems: "center",
               gap: "6px",
-              fontSize: "0.8rem",
+              fontSize: "0.75rem",
               fontWeight: "600",
               color: "var(--text-primary)",
               marginBottom: "6px",
@@ -193,7 +211,7 @@ export default function SmartComboFinder({
               borderRadius: "var(--radius-sm)",
               border: "1px solid var(--border-color)",
               backgroundColor: "#FFFFFF",
-              fontSize: "0.95rem",
+              fontSize: "0.9rem",
               fontWeight: "500",
             }}
           />
@@ -206,7 +224,7 @@ export default function SmartComboFinder({
               display: "flex",
               alignItems: "center",
               gap: "6px",
-              fontSize: "0.8rem",
+              fontSize: "0.75rem",
               fontWeight: "600",
               color: "var(--text-primary)",
               marginBottom: "6px",
@@ -226,7 +244,7 @@ export default function SmartComboFinder({
               borderRadius: "var(--radius-sm)",
               border: "1px solid var(--border-color)",
               backgroundColor: "#FFFFFF",
-              fontSize: "0.95rem",
+              fontSize: "0.9rem",
               fontWeight: "500",
             }}
           />
@@ -239,7 +257,7 @@ export default function SmartComboFinder({
               display: "flex",
               alignItems: "center",
               gap: "6px",
-              fontSize: "0.8rem",
+              fontSize: "0.75rem",
               fontWeight: "600",
               color: "var(--text-primary)",
               marginBottom: "6px",
@@ -257,7 +275,7 @@ export default function SmartComboFinder({
               borderRadius: "var(--radius-sm)",
               border: "1px solid var(--border-color)",
               backgroundColor: "#FFFFFF",
-              fontSize: "0.95rem",
+              fontSize: "0.9rem",
               fontWeight: "600",
               color: "var(--primary)",
             }}
@@ -285,40 +303,62 @@ export default function SmartComboFinder({
       <div
         style={{
           display: "flex",
-          alignItems: "center",
-          gap: "8px",
-          padding: "8px 14px",
+          alignItems: "flex-start",
+          gap: "10px",
+          padding: "10px 14px",
           backgroundColor: "#FFFBEB",
           borderRadius: "var(--radius-sm)",
           border: "1px solid #FDE68A",
           color: "#92400E",
           fontSize: "0.85rem",
-          marginBottom: "24px",
+          lineHeight: "1.5",
+          marginBottom: "20px",
         }}
       >
-        <CheckCircle2 size={15} style={{ flexShrink: 0 }} />
+        <CheckCircle2 size={16} style={{ flexShrink: 0, marginTop: "2px", color: "#D97706" }} />
         <span>
           <strong>Extra Person Policy:</strong> Each Family Bedroom accommodates 4 guests in regular beds and can host{" "}
           <strong>1 extra person with mattress</strong> for just <strong>₹300/night</strong>. Double bedrooms accommodate 2 guests.
         </span>
       </div>
 
-      {/* Recommendation Results */}
+      {/* Recommendation Results Area */}
       <div>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: "16px" }}>
-          <h3 style={{ fontSize: "1.3rem", display: "flex", alignItems: "center", gap: "8px" }}>
-            Recommended Options for <strong>{guestsCount} Guests</strong> ({numNights} night{numNights > 1 ? "s" : ""})
+        <div className="smart-combo-header-row">
+          <h3 className="smart-combo-title">
+            Recommended Options for <strong>{guestsCount} Guests</strong>{" "}
+            <span style={{ fontWeight: 400, color: "var(--text-secondary)", fontSize: "0.9rem", whiteSpace: "nowrap" }}>
+              ({numNights} night{numNights > 1 ? "s" : ""})
+            </span>
           </h3>
-          <span style={{ fontSize: "0.85rem", color: "var(--text-secondary)" }}>
+          <span
+            style={{
+              fontSize: "0.82rem",
+              color: "var(--text-secondary)",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "6px",
+            }}
+          >
+            <span
+              style={{
+                width: "8px",
+                height: "8px",
+                borderRadius: "50%",
+                backgroundColor: availableRooms.length > 0 ? "#22C55E" : "#EF4444",
+                display: "inline-block",
+                flexShrink: 0,
+              }}
+            />
             {availableRooms.length} of 4 rooms available for your dates
           </span>
         </div>
 
-        {/* Case 1: 15+ Guests (Exceeds 14 Max Capacity) */}
-        {isGroupOverCapacity ? (
+        {/* State 1: Large Group (15+ Guests) - Exceeds total property max capacity of 14 */}
+        {isLargeGroup ? (
           <div
             style={{
-              padding: "24px",
+              padding: "24px 20px",
               borderRadius: "var(--radius-md)",
               backgroundColor: "var(--bg-secondary)",
               border: "2px dashed var(--primary)",
@@ -344,115 +384,221 @@ export default function SmartComboFinder({
               <Home size={24} />
             </div>
             <div>
-              <h4 style={{ fontSize: "1.3rem", marginBottom: "6px" }}>
+              <h4 style={{ fontSize: "1.25rem", marginBottom: "6px", fontWeight: "700" }}>
                 Hosting Large Groups ({guestsCount}+ Guests)
               </h4>
-              <p style={{ color: "var(--text-secondary)", maxWidth: "600px", margin: "0 auto", fontSize: "0.95rem" }}>
+              <p style={{ color: "var(--text-secondary)", maxWidth: "600px", margin: "0 auto", fontSize: "0.92rem", lineHeight: "1.5" }}>
                 Agrawal House can host up to <strong>14 guests</strong> across our 4 private bedrooms. For your group of {guestsCount} guests,
-                we can book our entire homestay for you, plus arrange trusted partner rooms right next door through our concierge!
+                we can reserve our entire homestay for you, plus arrange verified partner rooms right next door through our concierge!
               </p>
             </div>
-            <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", justifyContent: "center", marginTop: "8px" }}>
+            <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", justifyContent: "center", width: "100%", maxWidth: "480px", marginTop: "4px" }}>
               <button
                 onClick={handleLargeGroupWhatsApp}
                 className="btn btn-primary"
                 style={{
                   display: "inline-flex",
                   alignItems: "center",
+                  justifyContent: "center",
                   gap: "8px",
-                  padding: "12px 24px",
+                  padding: "12px 20px",
                   backgroundColor: "#22C55E",
                   color: "#FFFFFF",
                   border: "none",
+                  flex: "1 1 220px",
+                  fontSize: "0.9rem",
                 }}
               >
-                <MessageCircle size={18} /> Chat with Host on WhatsApp for Group Booking
+                <MessageCircle size={18} /> Chat on WhatsApp for Group Booking
               </button>
-              <Link href="/enquiry" className="btn btn-secondary" style={{ padding: "12px 24px" }}>
+              <Link
+                href="/enquiry"
+                className="btn btn-secondary"
+                style={{ padding: "12px 20px", flex: "1 1 160px", textAlign: "center", fontSize: "0.9rem" }}
+              >
                 Send Enquiry Form
               </Link>
             </div>
           </div>
-        ) : combos.length === 0 ? (
+        ) : isDatesSoldOut ? (
+          /* State 2: Dates Completely Sold Out (0 of 4 rooms available) */
           <div
             style={{
-              padding: "32px",
+              padding: "28px 20px",
               textAlign: "center",
               backgroundColor: "#FEF2F2",
               borderRadius: "var(--radius-md)",
               border: "1px solid #FECACA",
               color: "#991B1B",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: "12px",
             }}
           >
-            <AlertCircle size={28} style={{ margin: "0 auto 8px auto" }} />
-            <h4 style={{ fontSize: "1.1rem", marginBottom: "4px" }}>No single combination available for these dates</h4>
-            <p style={{ fontSize: "0.9rem", color: "#7F1D1D" }}>
-              Some of the rooms needed to host {guestsCount} guests are already reserved on your chosen dates. Try modifying your dates or message us on WhatsApp to find custom arrangements.
+            <AlertCircle size={32} style={{ color: "#DC2626" }} />
+            <div>
+              <h4 style={{ fontSize: "1.2rem", fontWeight: "700", marginBottom: "6px" }}>
+                All Rooms Booked for Selected Dates
+              </h4>
+              <p style={{ fontSize: "0.9rem", color: "#7F1D1D", maxWidth: "560px", margin: "0 auto", lineHeight: "1.5" }}>
+                All 4 rooms at Agrawal House are reserved from <strong>{checkIn}</strong> to <strong>{checkOut}</strong>.
+                Try selecting different dates on the calendar above or message us on WhatsApp to check if dates can be adjusted or for upcoming openings.
+              </p>
+            </div>
+            <button
+              onClick={handleDatesEnquiryWhatsApp}
+              className="btn"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "8px",
+                padding: "10px 20px",
+                backgroundColor: "#22C55E",
+                color: "#FFFFFF",
+                border: "none",
+                fontWeight: "600",
+                fontSize: "0.9rem",
+                borderRadius: "var(--radius-sm)",
+                marginTop: "4px",
+              }}
+            >
+              <MessageCircle size={17} /> Enquire Availability on WhatsApp
+            </button>
+          </div>
+        ) : isInsufficientCapacity ? (
+          /* State 3: Partial Availability (e.g. 6 guests requested, but only 1 room available) */
+          <div
+            style={{
+              padding: "24px 20px",
+              textAlign: "center",
+              backgroundColor: "#FFFBEB",
+              borderRadius: "var(--radius-md)",
+              border: "1px solid #FDE68A",
+              color: "#92400E",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: "12px",
+            }}
+          >
+            <AlertCircle size={30} style={{ color: "#D97706" }} />
+            <div>
+              <h4 style={{ fontSize: "1.15rem", fontWeight: "700", marginBottom: "4px" }}>
+                Partial Availability ({availableRooms.length} of 4 Rooms Free)
+              </h4>
+              <p style={{ fontSize: "0.88rem", color: "#78350F", maxWidth: "560px", margin: "0 auto", lineHeight: "1.5" }}>
+                The available rooms on these dates can host up to <strong>{totalAvailableCapacity} guests</strong>, but your search is for <strong>{guestsCount} guests</strong>.
+                Some of our bedrooms are already reserved. You can book the available room(s) below or message our host for custom options!
+              </p>
+            </div>
+            <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", justifyContent: "center" }}>
+              <button
+                onClick={handleDatesEnquiryWhatsApp}
+                className="btn"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  padding: "10px 18px",
+                  backgroundColor: "#22C55E",
+                  color: "#FFFFFF",
+                  border: "none",
+                  fontWeight: "600",
+                  fontSize: "0.85rem",
+                  borderRadius: "var(--radius-sm)",
+                }}
+              >
+                <MessageCircle size={16} /> Chat on WhatsApp for Options
+              </button>
+              <Link
+                href="/rooms"
+                className="btn btn-secondary"
+                style={{ padding: "10px 18px", fontSize: "0.85rem" }}
+              >
+                Browse Individual Rooms Below
+              </Link>
+            </div>
+          </div>
+        ) : combos.length === 0 ? (
+          /* State 4: Fallback empty */
+          <div
+            style={{
+              padding: "24px 20px",
+              textAlign: "center",
+              backgroundColor: "#F9FAFB",
+              borderRadius: "var(--radius-md)",
+              border: "1px solid var(--border-color)",
+              color: "var(--text-secondary)",
+            }}
+          >
+            <p style={{ fontSize: "0.9rem", margin: 0 }}>
+              No room combination found matching these exact criteria. Try adjusting dates or guest count above.
             </p>
           </div>
         ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+          /* State 5: Combos Available */
+          <div style={{ display: "flex", flexDirection: "column", gap: "18px" }}>
             {combos.map((combo, idx) => (
               <div
                 key={combo.id}
+                className="combo-card"
                 style={{
-                  backgroundColor: "#FFFFFF",
-                  borderRadius: "var(--radius-md)",
                   border: idx === 0 ? "2px solid var(--primary)" : "1px solid var(--border-color)",
-                  boxShadow: idx === 0 ? "0 8px 24px rgba(194, 65, 12, 0.1)" : "var(--shadow-sm)",
-                  padding: "24px",
-                  display: "grid",
-                  gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-                  gap: "24px",
-                  alignItems: "center",
-                  position: "relative",
-                  overflow: "hidden",
+                  boxShadow: idx === 0 ? "0 6px 20px rgba(194, 65, 12, 0.12)" : "var(--shadow-sm)",
                 }}
               >
                 {/* Badge */}
                 {combo.badge && (
-                  <div
-                    style={{
-                      position: "absolute",
-                      top: "14px",
-                      right: "16px",
-                      fontSize: "0.75rem",
-                      fontWeight: "700",
-                      padding: "4px 10px",
-                      borderRadius: "999px",
-                      textTransform: "uppercase",
-                      letterSpacing: "0.05em",
-                      backgroundColor:
-                        combo.badge === "Best Value"
-                          ? "#D1FAE5"
-                          : combo.badge === "Whole Property Buyout"
-                          ? "#FEF3C7"
-                          : "var(--primary-light)",
-                      color:
-                        combo.badge === "Best Value"
-                          ? "#065F46"
-                          : combo.badge === "Whole Property Buyout"
-                          ? "#92400E"
-                          : "var(--primary)",
-                    }}
-                  >
-                    {combo.badge}
+                  <div className="combo-badge-tag">
+                    <span
+                      style={{
+                        fontSize: "0.75rem",
+                        fontWeight: "700",
+                        padding: "4px 10px",
+                        borderRadius: "999px",
+                        textTransform: "uppercase",
+                        letterSpacing: "0.05em",
+                        backgroundColor:
+                          combo.badge === "Best Value"
+                            ? "#D1FAE5"
+                            : combo.badge === "Whole Property Buyout"
+                            ? "#FEF3C7"
+                            : "var(--primary-light)",
+                        color:
+                          combo.badge === "Best Value"
+                            ? "#065F46"
+                            : combo.badge === "Whole Property Buyout"
+                            ? "#92400E"
+                            : "var(--primary)",
+                      }}
+                    >
+                      {combo.badge}
+                    </span>
                   </div>
                 )}
 
                 {/* Left Side: Combo Details */}
-                <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                   <div>
-                    <h4 style={{ fontSize: "1.3rem", fontWeight: "700", color: "var(--text-primary)", marginBottom: "4px", paddingRight: "100px" }}>
+                    <h4
+                      style={{
+                        fontSize: "1.25rem",
+                        fontWeight: "700",
+                        color: "var(--text-primary)",
+                        marginBottom: "4px",
+                        lineHeight: "1.3",
+                      }}
+                    >
                       {combo.title}
                     </h4>
-                    <p style={{ fontSize: "0.9rem", color: "var(--text-secondary)", lineHeight: "1.5" }}>
+                    <p style={{ fontSize: "0.88rem", color: "var(--text-secondary)", lineHeight: "1.5", margin: 0 }}>
                       {combo.description}
                     </p>
                   </div>
 
                   {/* Rooms Included Tags */}
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
                     {combo.rooms.map((r) => (
                       <span
                         key={r.id}
@@ -462,7 +608,7 @@ export default function SmartComboFinder({
                           gap: "6px",
                           fontSize: "0.8rem",
                           fontWeight: "600",
-                          padding: "6px 12px",
+                          padding: "5px 10px",
                           borderRadius: "var(--radius-sm)",
                           backgroundColor: "var(--bg-secondary)",
                           color: "var(--text-primary)",
@@ -476,34 +622,25 @@ export default function SmartComboFinder({
                   </div>
 
                   {/* Amenities Highlights */}
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: "12px", fontSize: "0.85rem", color: "var(--text-secondary)" }}>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", fontSize: "0.82rem", color: "var(--text-secondary)" }}>
                     {combo.amenitiesSummary.map((amenity, aIdx) => (
                       <span key={aIdx} style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
-                        <CheckCircle2 size={13} style={{ color: "#16A34A" }} /> {amenity}
+                        <CheckCircle2 size={13} style={{ color: "#16A34A", flexShrink: 0 }} /> {amenity}
                       </span>
                     ))}
                   </div>
                 </div>
 
                 {/* Right Side: Pricing & Actions */}
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "flex-end",
-                    justifyContent: "center",
-                    gap: "12px",
-                    borderLeft: "1px solid var(--border-color)",
-                    paddingLeft: "24px",
-                  }}
-                  className="combo-price-action-box"
-                >
-                  <div style={{ textAlign: "right" }}>
-                    <div style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>Total for {numNights} night{numNights > 1 ? "s" : ""}</div>
-                    <div style={{ fontSize: "1.8rem", fontWeight: "700", color: "var(--primary)" }}>
+                <div className="combo-price-action-box">
+                  <div className="combo-price-text">
+                    <div style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>
+                      Total for {numNights} night{numNights > 1 ? "s" : ""}
+                    </div>
+                    <div style={{ fontSize: "1.75rem", fontWeight: "700", color: "var(--primary)", lineHeight: 1.2 }}>
                       ₹{combo.totalForStay}
                     </div>
-                    <div style={{ fontSize: "0.82rem", color: "var(--text-secondary)" }}>
+                    <div style={{ fontSize: "0.8rem", color: "var(--text-secondary)" }}>
                       (₹{combo.nightlyTotal} / night)
                     </div>
                     {combo.extraGuestsCount > 0 && (
@@ -513,21 +650,23 @@ export default function SmartComboFinder({
                     )}
                   </div>
 
-                  <div style={{ display: "flex", gap: "8px", width: "100%", justifyContent: "flex-end", flexWrap: "wrap" }}>
+                  <div className="combo-actions-wrap">
                     <button
                       onClick={() => handleWhatsAppCombo(combo)}
                       className="btn"
                       style={{
-                        padding: "10px 18px",
+                        padding: "10px 16px",
                         fontSize: "0.85rem",
                         backgroundColor: "#22C55E",
                         color: "#FFFFFF",
                         border: "none",
                         display: "inline-flex",
                         alignItems: "center",
+                        justifyContent: "center",
                         gap: "6px",
                         fontWeight: "600",
                         boxShadow: "0 2px 8px rgba(34, 197, 94, 0.25)",
+                        flex: "1 1 auto",
                       }}
                     >
                       <MessageCircle size={15} /> Book Combo via WhatsApp
@@ -536,7 +675,14 @@ export default function SmartComboFinder({
                       <Link
                         href={`/rooms/${combo.rooms[0].id}`}
                         className="btn btn-secondary"
-                        style={{ padding: "10px 14px", fontSize: "0.85rem", display: "inline-flex", alignItems: "center", gap: "4px" }}
+                        style={{
+                          padding: "10px 14px",
+                          fontSize: "0.85rem",
+                          display: "inline-flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          gap: "4px",
+                        }}
                       >
                         View Room <ArrowRight size={13} />
                       </Link>

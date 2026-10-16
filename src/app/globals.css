@@ -383,5 +383,129 @@ html.lenis, html.lenis body {
   width: 100%;
 }
 
+/* Smart Group Stay & Combo Finder Responsive Styles */
+.smart-combo-container {
+  padding: 16px;
+  border-radius: var(--radius-md);
+  margin-bottom: 36px;
+}
+@media (min-width: 640px) {
+  .smart-combo-container {
+    padding: 24px;
+    margin-bottom: 44px;
+  }
+}
+@media (min-width: 1024px) {
+  .smart-combo-container {
+    padding: 32px;
+    margin-bottom: 52px;
+  }
+}
+
+.smart-combo-header-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+@media (min-width: 640px) {
+  .smart-combo-header-row {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+  }
+}
+
+.smart-combo-title {
+  font-size: 1.15rem;
+  line-height: 1.35;
+  margin: 0;
+  display: block;
+}
+@media (min-width: 640px) {
+  .smart-combo-title {
+    font-size: 1.35rem;
+  }
+}
+
+.combo-card {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 16px;
+  position: relative;
+  border-radius: var(--radius-md);
+  background-color: #FFFFFF;
+}
+@media (min-width: 768px) {
+  .combo-card {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    padding: 24px;
+    gap: 24px;
+  }
+}
+
+.combo-price-action-box {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  border-top: 1px solid var(--border-color);
+  padding-top: 16px;
+  width: 100%;
+}
+@media (min-width: 768px) {
+  .combo-price-action-box {
+    border-top: none;
+    border-left: 1px solid var(--border-color);
+    padding-top: 0;
+    padding-left: 24px;
+    align-items: flex-end;
+    justify-content: center;
+    width: auto;
+    min-width: 250px;
+  }
+}
+
+.combo-price-text {
+  text-align: left;
+}
+@media (min-width: 768px) {
+  .combo-price-text {
+    text-align: right;
+  }
+}
+
+.combo-actions-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+@media (min-width: 480px) {
+  .combo-actions-wrap {
+    flex-direction: row;
+    justify-content: flex-end;
+    width: auto;
+  }
+}
+
+.combo-badge-tag {
+  position: static;
+  display: inline-block;
+  align-self: flex-start;
+  margin-bottom: 8px;
+}
+@media (min-width: 768px) {
+  .combo-badge-tag {
+    position: absolute;
+    top: 14px;
+    right: 16px;
+    margin-bottom: 0;
+  }
+}
+
 
 
