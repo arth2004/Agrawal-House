@@ -26,7 +26,7 @@ insert into public.rooms (
   'Double bedroom 2',
   'A warm, elegantly decorated room ideal for couples or solo travelers. Features plush bedding, air conditioning, and an attached modern bathroom.',
   2,
-  2000,
+  2500,
   array['High-Speed Wi-Fi', 'Air Conditioning', 'Queen Bed', 'Geyser', 'Private Bath'],
   array['/images/bed-2a.jpg', 'https://rlepvvsjxbjrzwsgzqke.supabase.co/storage/v1/object/public/room-photos/1786131535282-x9j2r0t.jpg'],
   'active'

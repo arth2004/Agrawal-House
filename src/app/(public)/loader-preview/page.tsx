@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { ArrowLeft, Play, Sparkles, Check, RefreshCw } from "lucide-react";
+import HeritageLoader from "@/components/HeritageLoader";
 
 export default function LoaderPreviewPage() {
   const [activeTab, setActiveTab] = useState<"option1" | "option2" | "both">("option1");
@@ -76,115 +77,28 @@ export default function LoaderPreviewPage() {
 
       {/* Option 2: Full Heritage Overlay */}
       {isSimulating2 && (
-        <div
-          className="animate-fade-in"
-          style={{
-            position: "fixed",
-            inset: 0,
-            zIndex: 99999,
-            backgroundColor: "#F8F5EE",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: "24px",
-          }}
-        >
-          {/* Circular Sacred Heritage Mandala Spinner */}
-          <div style={{ position: "relative", width: "120px", height: "120px", marginBottom: "28px" }}>
-            {/* Outer rotating gold ring */}
-            <div
-              className="heritage-spinner-ring"
-              style={{
-                position: "absolute",
-                inset: 0,
-                borderRadius: "50%",
-                border: "2px dashed #D97706",
-                opacity: 0.8,
-              }}
-            />
-
-            {/* Pulsing inner glow */}
-            <div
-              className="heritage-pulse-circle"
-              style={{
-                position: "absolute",
-                inset: "10px",
-                borderRadius: "50%",
-                background: "radial-gradient(circle, rgba(217, 119, 6, 0.18) 0%, rgba(194, 65, 12, 0.05) 70%, transparent 100%)",
-              }}
-            />
-
-            {/* Central Sacred Om / Mandala Icon */}
-            <div
-              style={{
-                position: "absolute",
-                inset: 0,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                color: "#C2410C",
-                fontSize: "2.8rem",
-                fontFamily: "var(--font-serif)",
-                textShadow: "0 2px 10px rgba(194, 65, 12, 0.25)",
-              }}
-            >
-              🕉️
-            </div>
-          </div>
-
-          <h2
-            style={{
-              fontFamily: "var(--font-serif)",
-              fontSize: "1.8rem",
-              color: "var(--text-primary)",
-              marginBottom: "8px",
-              letterSpacing: "0.08em",
-              textTransform: "uppercase",
-              textAlign: "center",
-            }}
-          >
-            Agrawal House
-          </h2>
-
-          <div
-            style={{
-              fontSize: "0.85rem",
-              color: "var(--primary)",
-              letterSpacing: "0.2em",
-              textTransform: "uppercase",
-              fontWeight: 600,
-              marginBottom: "16px",
-            }}
-          >
-            Homestay • Ujjain
-          </div>
-
-          <p
-            className="heritage-shimmer-text"
-            style={{
-              color: "var(--text-secondary)",
-              fontSize: "0.95rem",
-              fontStyle: "italic",
-            }}
-          >
-            Preparing your peaceful stay...
-          </p>
-
+        <div style={{ position: "fixed", inset: 0, zIndex: 99999 }}>
+          <HeritageLoader fullScreen={true} subtitle="Preparing your peaceful stay..." />
           <button
             onClick={() => setIsSimulating2(false)}
             style={{
-              marginTop: "32px",
-              padding: "6px 16px",
+              position: "fixed",
+              bottom: "40px",
+              left: "50%",
+              transform: "translateX(-50%)",
+              zIndex: 100000,
+              padding: "8px 20px",
               borderRadius: "999px",
               border: "1px solid var(--border-color)",
               backgroundColor: "#FFFFFF",
-              color: "var(--text-muted)",
-              fontSize: "0.8rem",
+              color: "var(--text-primary)",
+              fontSize: "0.85rem",
+              fontWeight: 600,
               cursor: "pointer",
+              boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
             }}
           >
-            Click to dismiss preview early
+            Dismiss Preview
           </button>
         </div>
       )}

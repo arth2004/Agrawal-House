@@ -21,7 +21,7 @@ export const DEFAULT_ROOMS: Room[] = [
     description:
       "A warm, elegantly decorated room ideal for couples or solo travelers. Features plush bedding, air conditioning, and an attached modern bathroom.",
     max_guests: 2,
-    base_price: 2000,
+    base_price: 2500,
     amenities: [
       "Air Conditioning",
       "High-Speed Wi-Fi",
@@ -43,7 +43,7 @@ export const DEFAULT_ROOMS: Room[] = [
     description:
       "A warm, elegantly decorated room ideal for couples or solo travelers. Features plush bedding, air conditioning, and an attached modern bathroom.",
     max_guests: 2,
-    base_price: 2000,
+    base_price: 2500,
     amenities: [
       "Air Conditioning",
       "High-Speed Wi-Fi",

@@ -26,64 +26,63 @@ export default function HeritageLoader({
         maxWidth: "420px",
       }}
     >
-      {/* Circular Sacred Heritage Mandala Spinner */}
+      {/* Exact Golden Sacred Om Mandala Emblem */}
       <div
         style={{
           position: "relative",
-          width: "110px",
-          height: "110px",
-          marginBottom: "26px",
+          width: "140px",
+          height: "140px",
+          marginBottom: "24px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
         }}
       >
-        {/* Outer rotating decorative dashed gold ring */}
+        {/* Soft rotating celestial aura behind emblem */}
         <div
           className="heritage-spinner-ring"
           style={{
             position: "absolute",
-            inset: 0,
+            inset: "-10px",
             borderRadius: "50%",
-            border: "2px dashed #D97706",
-            opacity: 0.85,
-            boxShadow: "0 0 20px rgba(217, 119, 6, 0.2)",
+            border: "1.5px dashed rgba(217, 119, 6, 0.5)",
           }}
         />
 
-        {/* Pulsing inner glow circle */}
+        {/* Ambient radial warm pulse */}
         <div
           className="heritage-pulse-circle"
           style={{
             position: "absolute",
-            inset: "8px",
+            inset: 0,
             borderRadius: "50%",
             background:
-              "radial-gradient(circle, rgba(217, 119, 6, 0.22) 0%, rgba(194, 65, 12, 0.08) 60%, transparent 100%)",
+              "radial-gradient(circle, rgba(217, 119, 6, 0.3) 0%, rgba(194, 65, 12, 0.1) 60%, transparent 100%)",
+            filter: "blur(8px)",
           }}
         />
 
-        {/* Central Sacred Om Icon */}
-        <div
+        {/* Exact Om Mandala Graphic */}
+        <img
+          src="/images/om-mandala.png"
+          alt="Agrawal House Sacred Om Emblem"
+          className="heritage-pulse-circle"
           style={{
-            position: "absolute",
-            inset: 0,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            color: "var(--primary)",
-            fontSize: "2.6rem",
-            fontFamily: "var(--font-serif)",
-            textShadow: "0 2px 12px rgba(194, 65, 12, 0.25)",
-            userSelect: "none",
+            width: "100%",
+            height: "100%",
+            objectFit: "contain",
+            position: "relative",
+            zIndex: 2,
+            filter: "drop-shadow(0 6px 20px rgba(217, 119, 6, 0.35))",
           }}
-        >
-          🕉️
-        </div>
+        />
       </div>
 
       {/* Brand Title */}
       <h2
         style={{
           fontFamily: "var(--font-serif)",
-          fontSize: "clamp(1.5rem, 3vw, 1.85rem)",
+          fontSize: "clamp(1.5rem, 3.2vw, 1.9rem)",
           color: "var(--text-primary)",
           marginBottom: "6px",
           letterSpacing: "0.08em",
@@ -97,7 +96,7 @@ export default function HeritageLoader({
       {/* Heritage Tagline */}
       <div
         style={{
-          fontSize: "0.8rem",
+          fontSize: "0.82rem",
           color: "var(--primary)",
           letterSpacing: "0.22em",
           textTransform: "uppercase",
