@@ -717,7 +717,36 @@ export const db = {
         if (error) {
           throw error;
         }
-        return data as IcalSyncConfig[];
+
+        if (data && data.length > 0) {
+          return data as IcalSyncConfig[];
+        }
+
+        // If Supabase table exists but is empty, migrate any existing configs from local storage
+        const localConfigs = await mockDB.getIcalSyncConfigs(roomId);
+        if (localConfigs.length > 0) {
+          for (const lc of localConfigs) {
+            try {
+              await supabase.from("ical_sync_configs").insert({
+                room_id: lc.room_id,
+                platform: lc.platform,
+                ical_url: lc.ical_url,
+                label: lc.label,
+                is_active: lc.is_active,
+                last_synced_at: lc.last_synced_at,
+                last_error: lc.last_error,
+              });
+            } catch {
+              // Ignore insert error
+            }
+          }
+          const { data: refreshed } = await query.order("created_at", { ascending: false });
+          if (refreshed && refreshed.length > 0) {
+            return refreshed as IcalSyncConfig[];
+          }
+        }
+
+        return (data as IcalSyncConfig[]) || [];
       } catch (error) {
         if (isMissingIcalTableError(error)) {
           console.warn(
