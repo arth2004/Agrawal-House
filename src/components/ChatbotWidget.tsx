@@ -18,6 +18,7 @@ export default function ChatbotWidget() {
   ]);
   const [inputValue, setInputValue] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const chatBodyRef = useRef<HTMLDivElement>(null);
 
   const suggestions = [
     'How far is Mahakal Temple?',
@@ -27,7 +28,14 @@ export default function ChatbotWidget() {
   ];
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (chatBodyRef.current) {
+      chatBodyRef.current.scrollTo({
+        top: chatBodyRef.current.scrollHeight,
+        behavior: 'smooth',
+      });
+    } else {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
   };
 
   useEffect(() => {
@@ -59,7 +67,7 @@ export default function ChatbotWidget() {
     }
 
     if (cleanQuery.includes('room') || cleanQuery.includes('rate') || cleanQuery.includes('price') || cleanQuery.includes('cost') || cleanQuery.includes('family') || cleanQuery.includes('double') || cleanQuery.includes('stay') || cleanQuery.includes('rent')) {
-      return 'We offer 4 distinct bedrooms across two categories:\n\n1. Double bedroom 1 & Double bedroom 2: Max 2 guests each, base price ₹2,000/night. Cozy layout with plush bedding, AC, and attached modern bathroom.\n2. Family bedroom 1 & Family bedroom 2: Max 4 guests each, base price ₹3,000/night. Spacious layout with high wood-beam ceilings, king bed, AC, and attached modern bathroom with geyser.\n\nAll rooms are fully air-conditioned, clean, and feature high-speed Wi-Fi.';
+      return 'We offer 4 distinct bedrooms across two categories:\n\n1. Double Bedroom 1 & Double Bedroom 2: Max 2 guests each, base price ₹2,000/night. Cozy layout with plush bedding, AC, and attached modern bathroom.\n2. Family Bedroom 1 & Family Bedroom 2: Accommodates 4 guests (up to 5 guests with extra mattress @ ₹300/night), base price ₹3,500/night. Spacious layout with AC and attached modern bathroom with geyser.\n\nTotal property capacity accommodates up to 14 guests across all 4 rooms! All rooms are fully air-conditioned and feature high-speed Wi-Fi.';
     }
 
     if (cleanQuery.includes('parking') || cleanQuery.includes('car') || cleanQuery.includes('bike') || cleanQuery.includes('vehicle')) {
@@ -132,13 +140,15 @@ export default function ChatbotWidget() {
       {isOpen && (
         <div
           className="glassmorphism animate-fade-in"
+          data-lenis-prevent="true"
           style={{
             position: 'fixed',
             bottom: '160px',
             right: '24px',
             width: 'calc(100% - 48px)',
             maxWidth: '360px',
-            height: '460px',
+            height: '480px',
+            maxHeight: 'calc(100vh - 180px)',
             borderRadius: 'var(--radius-md)',
             boxShadow: 'var(--shadow-lg)',
             border: '1px solid var(--border-color)',
@@ -146,7 +156,8 @@ export default function ChatbotWidget() {
             flexDirection: 'column',
             overflow: 'hidden',
             zIndex: 998,
-            backgroundColor: 'rgba(255, 255, 255, 0.96)',
+            backgroundColor: 'rgba(255, 255, 255, 0.98)',
+            overscrollBehavior: 'contain',
           }}
         >
           {/* Header */}
@@ -176,16 +187,21 @@ export default function ChatbotWidget() {
 
           {/* Messages Body */}
           <div
+            ref={chatBodyRef}
+            data-lenis-prevent="true"
             style={{
               flex: 1,
               padding: '16px 20px',
               overflowY: 'auto',
+              overscrollBehavior: 'contain',
               display: 'flex',
               flexDirection: 'column',
               gap: '14px',
               backgroundColor: 'rgba(250, 248, 245, 0.6)',
+              touchAction: 'pan-y',
             }}
-            className="scrollbar-hide"
+            className="chat-scrollbar"
+            onWheel={(e) => e.stopPropagation()}
           >
             {messages.map((msg, index) => {
               const isBot = msg.sender === 'bot';
@@ -218,15 +234,19 @@ export default function ChatbotWidget() {
           {/* Suggestions Strip */}
           {messages.length === 1 && (
             <div
+              data-lenis-prevent="true"
               style={{
                 padding: '8px 16px 12px 16px',
                 display: 'flex',
                 gap: '8px',
                 overflowX: 'auto',
+                overscrollBehavior: 'contain',
                 borderTop: '1px solid var(--border-color)',
                 backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                touchAction: 'pan-x',
               }}
-              className="scrollbar-hide"
+              className="chat-scrollbar"
+              onWheel={(e) => e.stopPropagation()}
             >
               {suggestions.map((s) => (
                 <button

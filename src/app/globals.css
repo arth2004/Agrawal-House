@@ -298,6 +298,26 @@ img {
   scrollbar-width: none;  /* Firefox */
 }
 
+/* Custom slim scrollbar for chat dialog */
+.chat-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.chat-scrollbar::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.03);
+  border-radius: 999px;
+}
+.chat-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(194, 65, 12, 0.35);
+  border-radius: 999px;
+}
+.chat-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(194, 65, 12, 0.65);
+}
+.chat-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(194, 65, 12, 0.35) transparent;
+}
+
 /* Lightbox Interactive Hover Effects */
 .lightbox-btn-hover:hover {
   background: rgba(255, 255, 255, 0.2) !important;
