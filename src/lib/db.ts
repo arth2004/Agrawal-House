@@ -300,6 +300,16 @@ export const db = {
 
   // --- BLOCKED DATES ---
   async getBlockedDates(roomId?: string): Promise<BlockedDate[]> {
+    // Just-in-Time Auto-Sync: if any active feed for this room hasn't synced in >10 min, refresh it
+    if (typeof window === "undefined") {
+      try {
+        const { syncIfStale } = await import("@/lib/syncService");
+        await syncIfStale(roomId, 10);
+      } catch {
+        // Non-blocking fallback
+      }
+    }
+
     let supabaseDates: BlockedDate[] = [];
     if (supabase) {
       try {

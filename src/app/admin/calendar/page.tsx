@@ -138,6 +138,34 @@ export default function AdminCalendarPage() {
       setBlockedDates(blockedData);
       setBookings(bookingsData);
       setSyncConfigs(configsData);
+
+      // Just-in-Time Auto-Sync: if any feed hasn't been synced in >10 min, refresh in background
+      const now = Date.now();
+      const hasStaleFeed = configsData.some(
+        (c) =>
+          c.is_active &&
+          (!c.last_synced_at ||
+            now - new Date(c.last_synced_at).getTime() > 10 * 60 * 1000),
+      );
+      if (hasStaleFeed) {
+        fetch("/api/calendar/sync", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ configs: configsData }),
+        })
+          .then((r) => r.json())
+          .then(async (data) => {
+            if (data?.success) {
+              const [refreshedBlocks, refreshedConfigs] = await Promise.all([
+                db.getBlockedDates(),
+                db.getIcalSyncConfigs(),
+              ]);
+              setBlockedDates(refreshedBlocks);
+              setSyncConfigs(refreshedConfigs);
+            }
+          })
+          .catch(() => {});
+      }
     } catch (err) {
       console.error("Error fetching calendar data:", err);
       setError("Failed to load calendar data. Please refresh the page.");
