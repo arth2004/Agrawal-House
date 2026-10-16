@@ -2,6 +2,7 @@ import React from "react";
 import Link from "next/link";
 import { db } from "@/lib/db";
 import ServiceCard from "@/components/ServiceCard";
+import HeroBookingBar from "@/components/HeroBookingBar";
 import {
   Coffee,
   MapPin,
@@ -12,6 +13,10 @@ import {
   Award,
   Star,
   ExternalLink,
+  CheckCircle2,
+  Calendar,
+  Phone,
+  Compass,
 } from "lucide-react";
 
 const TOURISM_CERT = {
@@ -29,113 +34,185 @@ export const revalidate = 0; // Disable caching to ensure fresh DB state
 export default async function HomePage() {
   const rooms = await db.getRooms();
   const services = await db.getServices();
-  const activeRooms = rooms.filter((r) => r.status === "active").slice(0, 3);
-  const activeServices = services.filter((service) => service.status === "active").slice(0, 3);
+  const activeRooms = rooms.filter((r) => r.status === "active").slice(0, 4);
+  const activeServices = services
+    .filter((service) => service.status === "active")
+    .slice(0, 3);
 
   return (
     <div
       style={{
         display: "flex",
         flexDirection: "column",
-        gap: "80px",
-        paddingBottom: "80px",
+        gap: "96px",
+        paddingBottom: "96px",
       }}
     >
-      {/* 1. Hero Section */}
+      {/* 1. Cinematic Luxury Hero Section */}
       <section
         style={{
           position: "relative",
-          height: "85vh",
-          minHeight: "600px",
+          minHeight: "92vh",
           display: "flex",
+          flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
           color: "#FFFFFF",
           backgroundImage:
-            'linear-gradient(rgba(28, 25, 23, 0.45), rgba(28, 25, 23, 0.65)), url("/images/hero_sunset.jpg")',
+            'linear-gradient(180deg, rgba(10, 8, 7, 0.82) 0%, rgba(18, 14, 12, 0.45) 40%, rgba(18, 14, 12, 0.85) 90%, #FAF8F5 100%), url("/images/hero_sunset.jpg")',
           backgroundSize: "cover",
           backgroundPosition: "center",
-          marginTop: "-90px", // Pull up behind the header
+          backgroundAttachment: "scroll",
+          marginTop: "-116px", // Pull up behind the header + top bar
+          paddingTop: "140px",
+          paddingBottom: "60px",
         }}
       >
-        <div className="container" style={{ textAlign: "center", zIndex: 10 }}>
-          <span
+        <div
+          className="container"
+          style={{
+            textAlign: "center",
+            zIndex: 10,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: "20px",
+          }}
+        >
+          {/* Eyebrow Pill */}
+          <div
             style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "8px",
+              padding: "6px 16px",
+              borderRadius: "999px",
+              backgroundColor: "rgba(229, 192, 123, 0.15)",
+              border: "1px solid rgba(229, 192, 123, 0.4)",
+              color: "#E5C07B",
+              fontSize: "0.82rem",
+              fontWeight: "600",
+              letterSpacing: "0.15em",
               textTransform: "uppercase",
-              letterSpacing: "0.4em",
-              fontSize: "0.85rem",
-              color: "var(--primary-light)",
-              display: "inline-block",
-              marginBottom: "16px",
-              fontWeight: "500",
-              animation: "fadeIn 0.8s ease",
+              backdropFilter: "blur(8px)",
             }}
           >
-            Welcome to Ujjain's Heritage Stay
-          </span>
+            <Sparkles size={14} /> Welcome to Ujjain's Heritage Stay
+          </div>
+
+          {/* Main Hero Headline */}
           <h1
             style={{
               fontFamily: "var(--font-serif)",
-              fontSize: "clamp(2.5rem, 6vw, 4.5rem)",
-              lineHeight: "1.15",
-              marginBottom: "24px",
+              fontSize: "clamp(2.6rem, 5.8vw, 4.8rem)",
+              lineHeight: "1.12",
               color: "#FFFFFF",
-              fontWeight: "800",
+              fontWeight: "700",
+              maxWidth: "920px",
+              margin: "0 auto",
+              textShadow: "0 4px 20px rgba(0, 0, 0, 0.5)",
             }}
           >
             Experience Cozy Luxury &<br />
             Ancient Tradition
           </h1>
+
+          {/* Hero Subtitle */}
           <p
             style={{
-              fontSize: "clamp(1rem, 2vw, 1.25rem)",
-              maxWidth: "650px",
-              margin: "0 auto 40px auto",
-              color: "#E7E5E4",
-              lineHeight: "1.6",
+              fontSize: "clamp(1.05rem, 1.8vw, 1.25rem)",
+              maxWidth: "680px",
+              margin: "0 auto 12px auto",
+              color: "rgba(250, 248, 245, 0.92)",
+              lineHeight: "1.65",
+              textShadow: "0 2px 10px rgba(0, 0, 0, 0.4)",
             }}
           >
-            Situated in the heart of Ujjain, Agrawal House combines modern
-            comfort with traditional hospitality, offering guests convenient
-            access to the city's spiritual landmarks and cultural attractions.
+            Situated in the sacred heart of Ujjain, Agrawal House combines modern
+            comfort with warm traditional hospitality, just minutes from
+            Mahakaleshwar Temple.
           </p>
+
+          {/* Hero CTAs */}
           <div
             style={{
               display: "inline-flex",
               gap: "16px",
               flexWrap: "wrap",
               justifyContent: "center",
+              marginBottom: "32px",
             }}
           >
             <Link
               href="/rooms"
               className="btn btn-primary"
-              style={{ padding: "16px 36px" }}
+              style={{
+                padding: "16px 36px",
+                fontSize: "0.92rem",
+                boxShadow: "0 6px 20px rgba(194, 65, 12, 0.4)",
+              }}
             >
-              Book Your Stay
+              <Calendar size={16} /> Reserve Your Stay
             </Link>
             <Link
               href="/about"
               className="btn btn-outline"
               style={{
-                padding: "16px 36px",
+                padding: "16px 32px",
                 color: "#FFFFFF",
-                borderColor: "#FFFFFF",
+                borderColor: "rgba(255, 255, 255, 0.6)",
+                backgroundColor: "rgba(255, 255, 255, 0.1)",
+                backdropFilter: "blur(6px)",
               }}
             >
-              Learn More
+              Discover Our Story
             </Link>
+          </div>
+
+          {/* Integrated Interactive Booking Bar */}
+          <div style={{ width: "100%", marginTop: "12px" }}>
+            <HeroBookingBar />
+          </div>
+
+          {/* Trust Highlights Strip */}
+          <div
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              justifyContent: "center",
+              gap: "24px",
+              marginTop: "28px",
+              color: "rgba(255, 255, 255, 0.9)",
+              fontSize: "0.85rem",
+              fontWeight: "500",
+            }}
+          >
+            <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+              <span style={{ color: "#E5C07B" }}>🕉️</span> 8-10 Mins to Mahakal Temple
+            </span>
+            <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+              <span style={{ color: "#E5C07B" }}>🏅</span> Govt. MP Tourism Certified
+            </span>
+            <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+              <span style={{ color: "#E5C07B" }}>⭐</span> 4.9/5 Google Rating (350+ Reviews)
+            </span>
+            <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+              <span style={{ color: "#E5C07B" }}>🚗</span> Easy Vehicle Parking
+            </span>
+            <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+              <span style={{ color: "#E5C07B" }}>📶</span> High-Speed Wi-Fi & AC
+            </span>
           </div>
         </div>
       </section>
 
-      {/* 2. Intro Section */}
+      {/* 2. Intro Story Section */}
       <section className="container">
         <div
           style={{
             display: "grid",
             gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
-            gap: "48px",
+            gap: "56px",
             alignItems: "center",
           }}
         >
@@ -145,22 +222,23 @@ export default async function HomePage() {
                 color: "var(--primary)",
                 fontWeight: "600",
                 textTransform: "uppercase",
-                letterSpacing: "0.1em",
+                letterSpacing: "0.15em",
                 fontSize: "0.85rem",
               }}
             >
-              Our Story
+              Our Story & Heritage
             </span>
 
             <h2
               style={{
-                fontSize: "2.5rem",
-                marginTop: "8px",
+                fontSize: "clamp(2.2rem, 3.5vw, 2.9rem)",
+                marginTop: "10px",
                 marginBottom: "24px",
                 lineHeight: "1.2",
+                fontFamily: "var(--font-serif)",
               }}
             >
-              Experience devotion, comfort, and authentic Ujjain hospitality
+              Where spiritual peace meets the comfort of home
             </h2>
 
             <p
@@ -186,13 +264,40 @@ export default async function HomePage() {
                 fontSize: "1.05rem",
               }}
             >
-              Surrounded by some of Ujjain's most revered temples and spiritual
-              landmarks, guests can easily explore Mahakal Lok, Harsiddhi
-              Temple, Ram Ghat, Kaal Bhairav Temple, and other sacred sites.
-              Whether you're visiting for दर्शन, religious ceremonies, or a
-              peaceful getaway, Agrawal House provides a welcoming base for your
-              spiritual journey.
+              Surrounded by Ujjain&apos;s most revered shrines, guests can easily
+              walk or take short e-rickshaw rides to Mahakal Lok, Harsiddhi
+              Mata Temple, Ram Ghat, and Kaal Bhairav. Whether you&apos;re visiting
+              for Bhasma Aarti दर्शन or a relaxing family getaway, Agrawal House
+              provides a welcoming sanctuary.
             </p>
+
+            {/* Feature Bullets */}
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+                gap: "14px",
+                marginBottom: "32px",
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: "10px", color: "var(--text-primary)", fontWeight: "500", fontSize: "0.95rem" }}>
+                <CheckCircle2 size={18} style={{ color: "var(--primary)", flexShrink: 0 }} />
+                <span>Spotless, sanitized rooms</span>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px", color: "var(--text-primary)", fontWeight: "500", fontSize: "0.95rem" }}>
+                <CheckCircle2 size={18} style={{ color: "var(--primary)", flexShrink: 0 }} />
+                <span>24×7 Hot water geysers</span>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px", color: "var(--text-primary)", fontWeight: "500", fontSize: "0.95rem" }}>
+                <CheckCircle2 size={18} style={{ color: "var(--primary)", flexShrink: 0 }} />
+                <span>Personal temple guidance</span>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px", color: "var(--text-primary)", fontWeight: "500", fontSize: "0.95rem" }}>
+                <CheckCircle2 size={18} style={{ color: "var(--primary)", flexShrink: 0 }} />
+                <span>Quiet, safe residential area</span>
+              </div>
+            </div>
+
             <Link
               href="/about"
               style={{
@@ -201,24 +306,28 @@ export default async function HomePage() {
                 gap: "8px",
                 color: "var(--primary)",
                 fontWeight: "600",
+                fontSize: "0.95rem",
+                textDecoration: "none",
               }}
             >
-              Explore the history of Agrawal House <ArrowRight size={16} />
+              Explore our background and heritage <ArrowRight size={16} />
             </Link>
           </div>
 
           <div style={{ position: "relative" }}>
             <img
-              src="/images/Mahakal.png"
-              alt="Mahakal Temple view"
+              src="/images/Front New.jpeg"
+              alt="Agrawal House Homestay facade"
               style={{
                 borderRadius: "var(--radius-lg)",
                 boxShadow: "var(--shadow-lg)",
                 width: "100%",
-                maxHeight: "580px",
+                maxHeight: "520px",
                 objectFit: "cover",
               }}
             />
+
+            {/* Floating Trust Card */}
             <div
               className="glassmorphism hide-mobile-floating"
               style={{
@@ -227,10 +336,10 @@ export default async function HomePage() {
                 left: "-24px",
                 padding: "24px",
                 borderRadius: "var(--radius-md)",
-                display: "none", // Shown on md screens
-                maxWidth: "240px",
+                display: "none",
+                maxWidth: "260px",
                 border: "1px solid var(--border-color)",
-                boxShadow: "var(--shadow-md)",
+                boxShadow: "0 12px 30px rgba(0,0,0,0.12)",
               }}
             >
               <Sparkles
@@ -241,45 +350,395 @@ export default async function HomePage() {
                 Genuine Hospitality
               </h4>
               <p
-                style={{ fontSize: "0.85rem", color: "var(--text-secondary)" }}
+                style={{ fontSize: "0.85rem", color: "var(--text-secondary)", lineHeight: "1.5" }}
               >
-                Rated 4.9/5 by over 350 guests from across India.
+                Rated 4.9/5 by over 350+ pilgrim families from across India.
               </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* 2.5 Services Section */}
+      {/* 3. Rooms & Accommodation Showcase */}
       <section className="container">
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
-          <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: '20px', flexWrap: 'wrap' }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "flex-end",
+            marginBottom: "48px",
+            flexWrap: "wrap",
+            gap: "20px",
+          }}
+        >
+          <div>
+            <span
+              style={{
+                color: "var(--primary)",
+                fontWeight: "600",
+                textTransform: "uppercase",
+                letterSpacing: "0.15em",
+                fontSize: "0.85rem",
+              }}
+            >
+              Accommodation
+            </span>
+            <h2
+              style={{
+                fontSize: "clamp(2rem, 3.5vw, 2.8rem)",
+                marginTop: "8px",
+                lineHeight: "1.2",
+                fontFamily: "var(--font-serif)",
+              }}
+            >
+              Comfortable Rooms Designed For Rest
+            </h2>
+          </div>
+          <Link
+            href="/rooms"
+            className="btn btn-outline"
+            style={{ textTransform: "uppercase", fontSize: "0.85rem" }}
+          >
+            View All Rooms ({rooms.length}) <ArrowRight size={15} />
+          </Link>
+        </div>
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+            gap: "32px",
+          }}
+        >
+          {activeRooms.map((room) => (
+            <div
+              key={room.id}
+              className="card"
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                overflow: "hidden",
+                border: "1px solid var(--border-color)",
+                backgroundColor: "var(--bg-card)",
+              }}
+            >
+              <div
+                style={{
+                  position: "relative",
+                  height: "230px",
+                  overflow: "hidden",
+                  backgroundColor: "#1C1917",
+                }}
+              >
+                <img
+                  src={room.photos[0] || "/images/room_mango_suite.jpg"}
+                  alt={room.name}
+                  loading="lazy"
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
+                    transition: "transform var(--transition-slow)",
+                  }}
+                  className="room-card-img"
+                />
+                <div
+                  style={{
+                    position: "absolute",
+                    bottom: "14px",
+                    left: "14px",
+                    backgroundColor: "rgba(28, 25, 23, 0.85)",
+                    backdropFilter: "blur(6px)",
+                    color: "#FFFFFF",
+                    padding: "6px 14px",
+                    borderRadius: "var(--radius-sm)",
+                    fontWeight: "600",
+                    fontSize: "0.95rem",
+                    border: "1px solid rgba(255, 255, 255, 0.15)",
+                  }}
+                >
+                  ₹{room.base_price}{" "}
+                  <span style={{ fontWeight: "400", fontSize: "0.8rem", color: "#E7E5E4" }}>
+                    / night
+                  </span>
+                </div>
+              </div>
+
+              <div
+                style={{
+                  padding: "24px",
+                  display: "flex",
+                  flexDirection: "column",
+                  flex: 1,
+                  gap: "12px",
+                }}
+              >
+                <h3 style={{ fontSize: "1.35rem", fontWeight: "600" }}>{room.name}</h3>
+                <p
+                  style={{
+                    color: "var(--text-secondary)",
+                    fontSize: "0.92rem",
+                    lineHeight: "1.6",
+                    flex: 1,
+                  }}
+                >
+                  {room.description.length > 110
+                    ? `${room.description.substring(0, 110)}...`
+                    : room.description}
+                </p>
+
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "16px",
+                    fontSize: "0.85rem",
+                    color: "var(--text-muted)",
+                    borderTop: "1px solid var(--border-color)",
+                    paddingTop: "14px",
+                  }}
+                >
+                  <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                    <Users size={15} style={{ color: "var(--primary)" }} /> Max {room.max_guests} guests
+                  </span>
+                </div>
+
+                <div style={{ display: "grid", gridTemplateColumns: "1fr", marginTop: "8px" }}>
+                  <Link
+                    href={`/rooms/${room.id}`}
+                    className="btn btn-primary"
+                    style={{ width: "100%", padding: "10px 18px", fontSize: "0.85rem" }}
+                  >
+                    View Room & Photos
+                  </Link>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* 4. Spiritual Proximity & Ujjain Temple Distances */}
+      <section
+        style={{
+          backgroundColor: "var(--bg-secondary)",
+          padding: "80px 0",
+          borderTop: "1px solid var(--border-color)",
+          borderBottom: "1px solid var(--border-color)",
+        }}
+      >
+        <div className="container">
+          <div style={{ textAlign: "center", marginBottom: "52px" }}>
+            <span
+              style={{
+                color: "var(--primary)",
+                fontWeight: "600",
+                textTransform: "uppercase",
+                letterSpacing: "0.15em",
+                fontSize: "0.85rem",
+              }}
+            >
+              Location Advantage
+            </span>
+            <h2
+              style={{
+                fontSize: "clamp(2rem, 3.5vw, 2.8rem)",
+                marginTop: "8px",
+                fontFamily: "var(--font-serif)",
+              }}
+            >
+              Stay Close to Sacred Ujjain Landmarks
+            </h2>
+            <p
+              style={{
+                color: "var(--text-secondary)",
+                maxWidth: "600px",
+                margin: "12px auto 0 auto",
+                fontSize: "1rem",
+              }}
+            >
+              Located in Patni Bazar, Agrawal House puts you within minutes of
+              every major pilgrimage point in the holy city.
+            </p>
+          </div>
+
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+              gap: "24px",
+              marginBottom: "40px",
+            }}
+          >
+            <div
+              className="card"
+              style={{
+                padding: "24px",
+                backgroundColor: "#FFFFFF",
+                textAlign: "center",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: "8px",
+              }}
+            >
+              <span style={{ fontSize: "2rem" }}>🕉️</span>
+              <h3 style={{ fontSize: "1.15rem", fontWeight: "600" }}>Mahakaleshwar Temple</h3>
+              <span style={{ color: "var(--primary)", fontWeight: "700", fontSize: "1.2rem" }}>
+                8 - 10 Mins
+              </span>
+              <p style={{ fontSize: "0.82rem", color: "var(--text-muted)" }}>
+                Quick auto or e-rickshaw ride for Bhasma Aarti & Darshan
+              </p>
+            </div>
+
+            <div
+              className="card"
+              style={{
+                padding: "24px",
+                backgroundColor: "#FFFFFF",
+                textAlign: "center",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: "8px",
+              }}
+            >
+              <span style={{ fontSize: "2rem" }}>✨</span>
+              <h3 style={{ fontSize: "1.15rem", fontWeight: "600" }}>Mahakal Lok Corridor</h3>
+              <span style={{ color: "var(--primary)", fontWeight: "700", fontSize: "1.2rem" }}>
+                8 Mins
+              </span>
+              <p style={{ fontSize: "0.82rem", color: "var(--text-muted)" }}>
+                Spectacular spiritual heritage corridor & light show
+              </p>
+            </div>
+
+            <div
+              className="card"
+              style={{
+                padding: "24px",
+                backgroundColor: "#FFFFFF",
+                textAlign: "center",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: "8px",
+              }}
+            >
+              <span style={{ fontSize: "2rem" }}>🌺</span>
+              <h3 style={{ fontSize: "1.15rem", fontWeight: "600" }}>Harsiddhi Mata Mandir</h3>
+              <span style={{ color: "var(--primary)", fontWeight: "700", fontSize: "1.2rem" }}>
+                5 - 7 Mins
+              </span>
+              <p style={{ fontSize: "0.82rem", color: "var(--text-muted)" }}>
+                Revered 51 Shaktipeeth with twin deepstambhs
+              </p>
+            </div>
+
+            <div
+              className="card"
+              style={{
+                padding: "24px",
+                backgroundColor: "#FFFFFF",
+                textAlign: "center",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: "8px",
+              }}
+            >
+              <span style={{ fontSize: "2rem" }}>🌊</span>
+              <h3 style={{ fontSize: "1.15rem", fontWeight: "600" }}>Ram Ghat (Shipra)</h3>
+              <span style={{ color: "var(--primary)", fontWeight: "700", fontSize: "1.2rem" }}>
+                6 Mins
+              </span>
+              <p style={{ fontSize: "0.82rem", color: "var(--text-muted)" }}>
+                Holy snan ghat and evening Shipra Aarti
+              </p>
+            </div>
+
+            <div
+              className="card"
+              style={{
+                padding: "24px",
+                backgroundColor: "#FFFFFF",
+                textAlign: "center",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: "8px",
+              }}
+            >
+              <span style={{ fontSize: "2rem" }}>🚉</span>
+              <h3 style={{ fontSize: "1.15rem", fontWeight: "600" }}>Railway Station</h3>
+              <span style={{ color: "var(--primary)", fontWeight: "700", fontSize: "1.2rem" }}>
+                10 - 12 Mins
+              </span>
+              <p style={{ fontSize: "0.82rem", color: "var(--text-muted)" }}>
+                Convenient transit connectivity across the city
+              </p>
+            </div>
+          </div>
+
+          <div style={{ textAlign: "center" }}>
+            <a
+              href="https://maps.app.goo.gl/k58ihqAVRoWvPEL88"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn btn-primary"
+              style={{ padding: "14px 32px" }}
+            >
+              <Compass size={16} /> Open Location in Google Maps
+            </a>
+          </div>
+        </div>
+      </section>
+
+      {/* 5. Services Section */}
+      <section className="container">
+        <div style={{ display: "flex", flexDirection: "column", gap: "28px" }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "flex-end",
+              justifyContent: "space-between",
+              gap: "20px",
+              flexWrap: "wrap",
+            }}
+          >
             <div>
               <span
                 style={{
-                  color: 'var(--primary)',
-                  fontWeight: '600',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.1em',
-                  fontSize: '0.85rem',
+                  color: "var(--primary)",
+                  fontWeight: "600",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.15em",
+                  fontSize: "0.85rem",
                 }}
               >
-                Our Services
+                Our Offerings
               </span>
-              <h2 style={{ fontSize: '2.5rem', marginTop: '8px' }}>
-                Flexible offerings built for pilgrims and travelers
+              <h2
+                style={{
+                  fontSize: "clamp(2rem, 3.5vw, 2.8rem)",
+                  marginTop: "8px",
+                  fontFamily: "var(--font-serif)",
+                }}
+              >
+                Services Tailored for Pilgrims
               </h2>
             </div>
-            <Link href="/services" className="btn btn-outline">
+            <Link href="/services" className="btn btn-outline" style={{ fontSize: "0.85rem" }}>
               View All Services <ArrowRight size={16} />
             </Link>
           </div>
 
           <div
             style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-              gap: '28px',
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+              gap: "28px",
             }}
           >
             {activeServices.map((service) => (
@@ -289,7 +748,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* MP Tourism Certification */}
+      {/* 6. MP Tourism Certification Section */}
       <section className="container">
         <div
           className="card"
@@ -298,7 +757,7 @@ export default async function HomePage() {
             gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
             gap: "40px",
             alignItems: "center",
-            padding: "40px",
+            padding: "44px",
             backgroundColor: "#FFFFFF",
             border: "1px solid var(--border-color)",
             boxShadow: "var(--shadow-md)",
@@ -341,9 +800,10 @@ export default async function HomePage() {
 
             <h2
               style={{
-                fontSize: "clamp(1.8rem, 4vw, 2.2rem)",
+                fontSize: "clamp(1.8rem, 3.5vw, 2.3rem)",
                 marginBottom: "12px",
                 lineHeight: "1.25",
+                fontFamily: "var(--font-serif)",
               }}
             >
               Registered with Madhya Pradesh Tourism
@@ -357,15 +817,16 @@ export default async function HomePage() {
                 marginBottom: "24px",
               }}
             >
-              Agrawal House is officially registered under the{" "}
-              {TOURISM_CERT.scheme}, administered by the{" "}
-              {TOURISM_CERT.department}.
+              Agrawal House is an officially certified homestay registered under the{" "}
+              <strong>{TOURISM_CERT.scheme}</strong>, administered by the{" "}
+              {TOURISM_CERT.department}. Enjoy complete peace of mind knowing your
+              stay meets state tourism quality, hygiene, and security standards.
             </p>
 
             <div
               style={{
                 display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
+                gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))",
                 gap: "16px",
               }}
             >
@@ -453,7 +914,7 @@ export default async function HomePage() {
               alt="Madhya Pradesh Tourism Homestay Registration Certificate — Agrawal House"
               style={{
                 width: "100%",
-                maxWidth: "420px",
+                maxWidth: "400px",
                 height: "auto",
                 borderRadius: "var(--radius-md)",
                 border: "1px solid var(--border-color)",
@@ -464,351 +925,15 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* 3. Highlights Section */}
-      <section
-        style={{ backgroundColor: "var(--bg-secondary)", padding: "80px 0" }}
-      >
-        <div className="container">
-          <div style={{ textAlign: "center", marginBottom: "56px" }}>
-            <span
-              style={{
-                color: "var(--primary)",
-                fontWeight: "600",
-                textTransform: "uppercase",
-                letterSpacing: "0.1em",
-                fontSize: "0.85rem",
-              }}
-            >
-              Amenities & Atmosphere
-            </span>
-            <h2 style={{ fontSize: "2.5rem", marginTop: "8px" }}>
-              Why You'll Love Staying With Us
-            </h2>
-          </div>
-
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
-              gap: "32px",
-            }}
-          >
-            <div
-              className="card"
-              style={{
-                padding: "32px",
-                backgroundColor: "#FFFFFF",
-                border: "none",
-              }}
-            >
-              <div
-                style={{
-                  display: "inline-flex",
-                  padding: "12px",
-                  backgroundColor: "var(--primary-light)",
-                  borderRadius: "50%",
-                  color: "var(--primary)",
-                  marginBottom: "20px",
-                }}
-              >
-                <Coffee size={24} />
-              </div>
-              <h3 style={{ fontSize: "1.3rem", marginBottom: "12px" }}>
-                Local Dining Nearby
-              </h3>
-
-              <p
-                style={{
-                  color: "var(--text-secondary)",
-                  fontSize: "0.95rem",
-                  lineHeight: "1.6",
-                }}
-              >
-                Enjoy Ujjain's local flavors with popular restaurants, cafés,
-                and eateries just minutes from our homestay.
-              </p>
-            </div>
-
-            <div
-              className="card"
-              style={{
-                padding: "32px",
-                backgroundColor: "#FFFFFF",
-                border: "none",
-              }}
-            >
-              <div
-                style={{
-                  display: "inline-flex",
-                  padding: "12px",
-                  backgroundColor: "var(--primary-light)",
-                  borderRadius: "50%",
-                  color: "var(--primary)",
-                  marginBottom: "20px",
-                }}
-              >
-                <Sparkles size={24} />
-              </div>
-              <h3 style={{ fontSize: "1.3rem", marginBottom: "12px" }}>
-                Sacred Temples
-              </h3>
-
-              <p
-                style={{
-                  color: "var(--text-secondary)",
-                  fontSize: "0.95rem",
-                  lineHeight: "1.6",
-                }}
-              >
-                Discover Ujjain's spiritual heritage with iconic temples and
-                sacred landmarks just minutes from your stay.
-              </p>
-            </div>
-
-            <div
-              className="card"
-              style={{
-                padding: "32px",
-                backgroundColor: "#FFFFFF",
-                border: "none",
-              }}
-            >
-              <div
-                style={{
-                  display: "inline-flex",
-                  padding: "12px",
-                  backgroundColor: "var(--primary-light)",
-                  borderRadius: "50%",
-                  color: "var(--primary)",
-                  marginBottom: "20px",
-                }}
-              >
-                <MapPin size={24} />
-              </div>
-              <h3 style={{ fontSize: "1.3rem", marginBottom: "12px" }}>
-                Prime Location
-              </h3>
-
-              <p
-                style={{
-                  color: "var(--text-secondary)",
-                  fontSize: "0.95rem",
-                  lineHeight: "1.6",
-                }}
-              >
-                Stay close to railway stations, local markets, restaurants, and
-                major city attractions with excellent connectivity across
-                Ujjain.
-              </p>
-            </div>
-
-            <div
-              className="card"
-              style={{
-                padding: "32px",
-                backgroundColor: "#FFFFFF",
-                border: "none",
-              }}
-            >
-              <div
-                style={{
-                  display: "inline-flex",
-                  padding: "12px",
-                  backgroundColor: "var(--primary-light)",
-                  borderRadius: "50%",
-                  color: "var(--primary)",
-                  marginBottom: "20px",
-                }}
-              >
-                <ShieldCheck size={24} />
-              </div>
-              <h3 style={{ fontSize: "1.3rem", marginBottom: "12px" }}>
-                Safe & Comfortable Stay
-              </h3>
-
-              <p
-                style={{
-                  color: "var(--text-secondary)",
-                  fontSize: "0.95rem",
-                  lineHeight: "1.6",
-                }}
-              >
-                Enjoy a secure and welcoming homestay experience with gated
-                access, reliable Wi-Fi, 24/7 water supply, and comfortable
-                spaces designed to make you feel at home.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 4. Rooms Listing Preview */}
+      {/* 7. Google Reviews Section */}
       <section className="container">
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "flex-end",
-            marginBottom: "48px",
-            flexWrap: "wrap",
-            gap: "20px",
-          }}
-        >
-          <div>
-            <span
-              style={{
-                color: "var(--primary)",
-                fontWeight: "600",
-                textTransform: "uppercase",
-                letterSpacing: "0.1em",
-                fontSize: "0.85rem",
-              }}
-            >
-              Our Accommodation
-            </span>
-            <h2
-              style={{
-                fontSize: "2.5rem",
-                marginTop: "8px",
-                lineHeight: "1.2",
-              }}
-            >
-              Beautiful Rooms Designed For Rest
-            </h2>
-          </div>
-          <Link
-            href="/rooms"
-            className="btn btn-outline"
-            style={{ textTransform: "uppercase" }}
-          >
-            View All Rooms
-          </Link>
-        </div>
-
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
-            gap: "32px",
-          }}
-        >
-          {activeRooms.map((room) => (
-            <div
-              key={room.id}
-              className="card"
-              style={{ display: "flex", flexDirection: "column" }}
-            >
-              <div
-                style={{
-                  position: "relative",
-                  height: "240px",
-                  overflow: "hidden",
-                }}
-              >
-                <img
-                  src={room.photos[0] || "/images/Front New.jpeg"}
-                  alt={room.name}
-                  style={{
-                    width: "100%",
-                    height: "100%",
-                    objectFit: "cover",
-                    transition: "transform var(--transition-slow)",
-                  }}
-                  className="room-card-img"
-                />
-                <div
-                  style={{
-                    position: "absolute",
-                    bottom: "16px",
-                    left: "16px",
-                    backgroundColor: "var(--primary)",
-                    color: "#FFFFFF",
-                    padding: "6px 14px",
-                    borderRadius: "var(--radius-sm)",
-                    fontWeight: "600",
-                    fontSize: "0.9rem",
-                  }}
-                >
-                  ₹{room.base_price}{" "}
-                  <span style={{ fontWeight: "400", fontSize: "0.8rem" }}>
-                    / night
-                  </span>
-                </div>
-              </div>
-
-              <div
-                style={{
-                  padding: "24px",
-                  display: "flex",
-                  flexDirection: "column",
-                  flex: 1,
-                  gap: "12px",
-                }}
-              >
-                <h3 style={{ fontSize: "1.4rem" }}>{room.name}</h3>
-                <p
-                  style={{
-                    color: "var(--text-secondary)",
-                    fontSize: "0.95rem",
-                    lineHeight: "1.5",
-                    flex: 1,
-                  }}
-                >
-                  {room.description.length > 120
-                    ? `${room.description.substring(0, 120)}...`
-                    : room.description}
-                </p>
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "16px",
-                    fontSize: "0.85rem",
-                    color: "var(--text-muted)",
-                    borderTop: "1px solid var(--border-color)",
-                    paddingTop: "16px",
-                  }}
-                >
-                  <span
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "6px",
-                    }}
-                  >
-                    <Users size={14} /> Max {room.max_guests} guests
-                  </span>
-                </div>
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "1fr",
-                    marginTop: "12px",
-                  }}
-                >
-                  <Link
-                    href={`/rooms/${room.id}`}
-                    className="btn btn-primary"
-                    style={{ width: "100%" }}
-                  >
-                    View & Book
-                  </Link>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* 5. Google Reviews Section */}
-      <section className="container" style={{ marginTop: "40px" }}>
         <div style={{ textAlign: "center", marginBottom: "48px" }}>
           <span
             style={{
               color: "var(--primary)",
               fontWeight: "600",
               textTransform: "uppercase",
-              letterSpacing: "0.1em",
+              letterSpacing: "0.15em",
               fontSize: "0.85rem",
             }}
           >
@@ -816,10 +941,10 @@ export default async function HomePage() {
           </span>
           <h2
             style={{
-              fontSize: "2.5rem",
+              fontSize: "clamp(2rem, 3.5vw, 2.8rem)",
               marginTop: "8px",
               marginBottom: "16px",
-              lineHeight: "1.2",
+              fontFamily: "var(--font-serif)",
             }}
           >
             Loved by Pilgrims & Families
@@ -832,10 +957,9 @@ export default async function HomePage() {
               alignItems: "center",
               gap: "12px",
               backgroundColor: "var(--bg-secondary)",
-              padding: "10px 20px",
+              padding: "10px 22px",
               borderRadius: "var(--radius-full)",
               border: "1px solid var(--border-color)",
-              marginTop: "8px",
             }}
           >
             <span style={{ fontWeight: "700", fontSize: "1.05rem" }}>
@@ -853,9 +977,7 @@ export default async function HomePage() {
               ))}
             </div>
             <strong style={{ color: "var(--text-primary)" }}>4.9 / 5</strong>
-            <span
-              style={{ fontSize: "0.85rem", color: "var(--text-secondary)" }}
-            >
+            <span style={{ fontSize: "0.85rem", color: "var(--text-secondary)" }}>
               (350+ reviews)
             </span>
           </div>
@@ -905,9 +1027,7 @@ export default async function HomePage() {
                 <h4 style={{ fontWeight: "700", fontSize: "0.95rem" }}>
                   Sharayu Ayyangar
                 </h4>
-                <div
-                  style={{ display: "flex", alignItems: "center", gap: "6px" }}
-                >
+                <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
                   <span
                     style={{
                       fontSize: "0.75rem",
@@ -920,9 +1040,7 @@ export default async function HomePage() {
                   >
                     Local Guide
                   </span>
-                  <span
-                    style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}
-                  >
+                  <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>
                     2 weeks ago
                   </span>
                 </div>
@@ -938,21 +1056,17 @@ export default async function HomePage() {
             <p
               style={{
                 fontSize: "0.95rem",
-                lineHeight: "1.6",
+                lineHeight: "1.65",
                 color: "var(--text-secondary)",
                 flex: 1,
                 fontStyle: "italic",
               }}
             >
-              "Had a great stay at Agrawal Homestay. The rooms were clean,
+              &ldquo;Had a great stay at Agrawal Homestay. The rooms were clean,
               comfortable, and well-maintained with all the necessary amenities.
               The location is excellent. Mahakal Mandir, Harsiddhi Mata Mandir,
-              and Kshipra Ghat are all nearby. Public transport is easily
-              available, restaurants and chaat places are also on the walking
-              distance. The hosts were extremely kind and helpful, guiding us
-              throughout our trip. The place felt 'very safe', even for solo
-              female travelers. 'Highly recommended' for anyone visiting
-              Ujjain!"
+              and Kshipra Ghat are all nearby. The hosts were extremely kind and
+              helpful, guiding us throughout our trip. Highly recommended!&rdquo;
             </p>
 
             <div
@@ -1012,12 +1126,8 @@ export default async function HomePage() {
                 <h4 style={{ fontWeight: "700", fontSize: "0.95rem" }}>
                   Siddhant Kakade
                 </h4>
-                <div
-                  style={{ display: "flex", alignItems: "center", gap: "6px" }}
-                >
-                  <span
-                    style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}
-                  >
+                <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                  <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>
                     1 month ago
                   </span>
                 </div>
@@ -1033,23 +1143,16 @@ export default async function HomePage() {
             <p
               style={{
                 fontSize: "0.95rem",
-                lineHeight: "1.6",
+                lineHeight: "1.65",
                 color: "var(--text-secondary)",
                 flex: 1,
                 fontStyle: "italic",
               }}
             >
-              "My experience at this homestay in Ujjain was truly very good. The
-              caretakers were extremely polite, helpful, and made sure
-              everything was comfortable throughout my stay. What I liked the
-              most was the homely feeling of this place. It never felt like I
-              was staying in a hotel—it genuinely felt like I was at my own
-              home, which made the experience even more relaxing and peaceful.
-              The overall environment was calm and welcoming, making it a
-              perfect choice for anyone visiting Ujjain, especially for temple
-              visits like Mahakaleshwar Jyotirlinga. I would definitely
-              recommend this homestay to anyone looking for a comfortable and
-              homely stay in Ujjain."
+              &ldquo;My experience at this homestay in Ujjain was truly very good. What I
+              liked the most was the homely feeling of this place. It never felt like I
+              was staying in a hotel—it genuinely felt like I was at my own home,
+              which made the experience even more relaxing and peaceful.&rdquo;
             </p>
 
             <div
@@ -1109,9 +1212,7 @@ export default async function HomePage() {
                 <h4 style={{ fontWeight: "700", fontSize: "0.95rem" }}>
                   Aman Thakur
                 </h4>
-                <div
-                  style={{ display: "flex", alignItems: "center", gap: "6px" }}
-                >
+                <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
                   <span
                     style={{
                       fontSize: "0.75rem",
@@ -1124,9 +1225,7 @@ export default async function HomePage() {
                   >
                     Local Guide
                   </span>
-                  <span
-                    style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}
-                  >
+                  <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>
                     3 weeks ago
                   </span>
                 </div>
@@ -1142,23 +1241,16 @@ export default async function HomePage() {
             <p
               style={{
                 fontSize: "0.95rem",
-                lineHeight: "1.6",
+                lineHeight: "1.65",
                 color: "var(--text-secondary)",
                 flex: 1,
                 fontStyle: "italic",
               }}
             >
-              "Staying here made my trip to Ujjain so much easier. The location
-              is perfect since it’s literally a 5-minute walk to Mahakaleshwar,
-              which saved us a lot of travel stress. The room was neat and
-              clean, with both AC and a geyser working perfectly. What really
-              made the stay special was the owner’s hospitality. He was
-              incredibly helpful, from assisting us with our trip planning to
-              suggesting a great local restaurant. Even after we checked out, he
-              let us keep our luggage there so we could explore the other
-              temples around Ujjain comfortably before catching our evening bus.
-              Truly a great experience and highly recommended for anyone
-              visiting."
+              &ldquo;Staying here made my trip to Ujjain so much easier. The room was neat
+              and clean, with both AC and geyser working perfectly. What really made the
+              stay special was the owner&apos;s hospitality. He was incredibly helpful
+              with our trip planning and let us keep our luggage safely after checkout.&rdquo;
             </p>
 
             <div
@@ -1184,7 +1276,7 @@ export default async function HomePage() {
           </div>
         </div>
 
-        {/* CTA to write/view review */}
+        {/* View on Google Maps Link */}
         <div style={{ textAlign: "center" }}>
           <a
             href="https://maps.app.goo.gl/k58ihqAVRoWvPEL88"
@@ -1201,12 +1293,10 @@ export default async function HomePage() {
               letterSpacing: "0.05em",
             }}
           >
-            View on Google Maps <ExternalLink size={16} />
+            Read All Reviews on Google Maps <ExternalLink size={16} />
           </a>
         </div>
       </section>
-
-      {/* Injecting responsive styles */}
     </div>
   );
 }
