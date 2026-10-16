@@ -507,5 +507,43 @@ html.lenis, html.lenis body {
   }
 }
 
+/* Heritage Loader Keyframes & Classes */
+@keyframes heritageSpin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes heritagePulse {
+  0%, 100% {
+    transform: scale(0.92);
+    opacity: 0.55;
+  }
+  50% {
+    transform: scale(1.08);
+    opacity: 0.95;
+  }
+}
+
+@keyframes heritageShimmer {
+  0%, 100% {
+    opacity: 0.65;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.heritage-spinner-ring {
+  animation: heritageSpin 10s linear infinite;
+}
+
+.heritage-pulse-circle {
+  animation: heritagePulse 2.4s ease-in-out infinite;
+}
+
+.heritage-shimmer-text {
+  animation: heritageShimmer 2s ease-in-out infinite;
+}
+
 
 

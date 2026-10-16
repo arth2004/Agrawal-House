@@ -15,6 +15,7 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import WhatsAppBookButton from "@/components/WhatsAppBookButton";
+import HeritageLoader from "@/components/HeritageLoader";
 
 function BookingForm() {
   const searchParams = useSearchParams();
@@ -175,11 +176,7 @@ function BookingForm() {
   };
 
   if (loading) {
-    return (
-      <div style={{ textAlign: "center", padding: "100px 0" }}>
-        <h3 style={{ fontSize: "1.5rem" }}>Loading checkout details...</h3>
-      </div>
-    );
+    return <HeritageLoader fullScreen={false} subtitle="Loading your reservation details..." />;
   }
 
   if (bookingSuccess) {
@@ -846,11 +843,7 @@ export default function BookPage() {
       </div>
 
       <Suspense
-        fallback={
-          <div style={{ textAlign: "center", padding: "100px 0" }}>
-            <h3>Loading checkout...</h3>
-          </div>
-        }
+        fallback={<HeritageLoader fullScreen={false} subtitle="Loading your reservation details..." />}
       >
         <BookingForm />
       </Suspense>
