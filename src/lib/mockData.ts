@@ -810,6 +810,12 @@ class MockDB {
     return undefined;
   }
 
+  async deleteEnquiry(id: string): Promise<void> {
+    await this.loadState();
+    this.enquiries = this.enquiries.filter((e) => e.id !== id);
+    await this.saveState();
+  }
+
   // Pricing Rules
   async getPricingRules(): Promise<PricingRule[]> {
     await this.loadState();

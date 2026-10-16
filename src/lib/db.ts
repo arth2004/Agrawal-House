@@ -473,53 +473,89 @@ export const db = {
 
   // --- ENQUIRIES ---
   async getEnquiries(): Promise<Enquiry[]> {
+    const localEnquiries = await mockDB.getEnquiries();
+
     if (supabase) {
-      const { data, error } = await supabase
-        .from("enquiries")
-        .select("*")
-        .order("created_at", { ascending: false });
-      if (error) {
-        throw error;
+      try {
+        const { data, error } = await supabase
+          .from("enquiries")
+          .select("*")
+          .order("created_at", { ascending: false });
+
+        if (!error && data) {
+          const supabaseIds = new Set(data.map((e) => e.id));
+          const unmergedLocal = localEnquiries.filter((e) => !supabaseIds.has(e.id));
+          return [...(data as Enquiry[]), ...unmergedLocal];
+        }
+      } catch (err) {
+        console.warn("Supabase getEnquiries fallback to local mock:", err);
       }
-      return data as Enquiry[];
     }
-    return mockDB.getEnquiries();
+    return localEnquiries;
   },
 
   async createEnquiry(
     enquiry: Omit<Enquiry, "id" | "status" | "created_at">,
   ): Promise<Enquiry> {
+    const localSaved = await mockDB.createEnquiry(enquiry);
+
     if (supabase) {
-      const { data, error } = await supabase
-        .from("enquiries")
-        .insert(enquiry)
-        .select()
-        .single();
-      if (error) {
-        throw error;
+      try {
+        const { data, error } = await supabase
+          .from("enquiries")
+          .insert(enquiry)
+          .select()
+          .single();
+        if (!error && data) {
+          return data as Enquiry;
+        }
+      } catch (err) {
+        console.warn("Supabase createEnquiry fallback to local mock:", err);
       }
-      return data as Enquiry;
     }
-    return mockDB.createEnquiry(enquiry);
+    return localSaved;
   },
 
   async updateEnquiryStatus(
     id: string,
     status: Enquiry["status"],
   ): Promise<Enquiry | undefined> {
+    await mockDB.updateEnquiryStatus(id, status);
+
     if (supabase) {
-      const { data, error } = await supabase
-        .from("enquiries")
-        .update({ status })
-        .eq("id", id)
-        .select()
-        .maybeSingle();
-      if (error) {
-        throw error;
+      try {
+        const { data, error } = await supabase
+          .from("enquiries")
+          .update({ status })
+          .eq("id", id)
+          .select()
+          .maybeSingle();
+        if (!error && data) {
+          return data as Enquiry;
+        }
+      } catch (err) {
+        console.warn("Supabase updateEnquiryStatus fallback to local mock:", err);
       }
-      return data ? (data as Enquiry) : undefined;
     }
     return mockDB.updateEnquiryStatus(id, status);
+  },
+
+  async deleteEnquiry(id: string): Promise<void> {
+    await mockDB.deleteEnquiry(id);
+
+    if (supabase) {
+      try {
+        const { error } = await supabase
+          .from("enquiries")
+          .delete()
+          .eq("id", id);
+        if (error) {
+          console.warn("Supabase deleteEnquiry fallback notice:", error.message);
+        }
+      } catch (err) {
+        console.warn("Supabase deleteEnquiry fallback to local mock:", err);
+      }
+    }
   },
 
   // --- PRICING RULES ---
