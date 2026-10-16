@@ -43,101 +43,24 @@ export default function PublicLayout({
   return (
     <SmoothScroll>
       <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-        {/* Top Luxury Announcement Bar */}
-        <div
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            zIndex: 60,
-            backgroundColor: isScrolled
-              ? '#1C1917'
-              : 'rgba(12, 10, 8, 0.85)',
-            backdropFilter: 'blur(10px)',
-            color: '#FAF8F5',
-            fontSize: '0.78rem',
-            letterSpacing: '0.04em',
-            borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
-            transition: 'all 0.3s ease',
-          }}
-        >
-          <div
-            className="container"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              height: '34px',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ color: '#E5C07B', fontSize: '0.82rem' }}>✨</span>
-              <span style={{ fontWeight: '500', opacity: 0.95 }}>
-              Homestay in Ujjain • 8 Mins to Mahakal Jyotirlinga
-              </span>
-            </div>
-            <div
-              style={{
-                display: 'none',
-                alignItems: 'center',
-                gap: '18px',
-              }}
-              className="top-bar-contact"
-            >
-              <a
-                href="tel:+917415160134"
-                style={{
-                  color: '#FAF8F5',
-                  textDecoration: 'none',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  opacity: 0.9,
-                  transition: 'opacity 0.2s',
-                }}
-              >
-                <Phone size={12} style={{ color: '#E5C07B' }} />
-                <span>+91 7415160134</span>
-              </a>
-              <span style={{ opacity: 0.3 }}>|</span>
-              <a
-                href="https://wa.me/917415160134?text=Hello%20Agrawal%20House,%20I%20would%20like%20to%20inquire%20about%20booking%20a%20stay."
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{
-                  color: '#22C55E',
-                  textDecoration: 'none',
-                  fontWeight: '600',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                }}
-              >
-                <span>WhatsApp Booking</span>
-              </a>
-            </div>
-          </div>
-        </div>
-
-        {/* Navigation Header */}
+        {/* Unified Luxury Navigation Header */}
         <header
           style={{
             position: 'fixed',
-            top: '34px',
+            top: 0,
             left: 0,
             right: 0,
             zIndex: 50,
             transition: 'all 0.35s cubic-bezier(0.16, 1, 0.3, 1)',
             backgroundColor: isHeroMode
               ? 'transparent'
-              : 'rgba(250, 248, 245, 0.95)',
+              : 'rgba(248, 245, 238, 0.95)',
             backgroundImage: isHeroMode
-              ? 'linear-gradient(180deg, rgba(8, 7, 6, 0.85) 0%, rgba(8, 7, 6, 0.4) 60%, transparent 100%)'
+              ? 'linear-gradient(180deg, rgba(0, 0, 0, 0.65) 0%, rgba(0, 0, 0, 0.2) 65%, transparent 100%)'
               : 'none',
             boxShadow: isScrolled ? '0 4px 20px rgba(0, 0, 0, 0.06)' : 'none',
             borderBottom: isHeroMode
-              ? '1px solid rgba(255, 255, 255, 0.08)'
+              ? 'none'
               : '1px solid var(--border-color)',
             backdropFilter: isScrolled ? 'blur(16px)' : 'none',
             WebkitBackdropFilter: isScrolled ? 'blur(16px)' : 'none',
@@ -149,10 +72,11 @@ export default function PublicLayout({
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
-              height: isScrolled ? '68px' : '82px',
+              height: isScrolled ? '70px' : '88px',
               transition: 'height 0.3s ease',
             }}
           >
+
             {/* Logo */}
             <Link href="/" style={{ display: 'flex', flexDirection: 'column', textDecoration: 'none' }}>
               <span
@@ -304,7 +228,7 @@ export default function PublicLayout({
         </header>
 
         {/* Main Content */}
-        <main style={{ paddingTop: '116px' }}>{children}</main>
+        <main style={{ paddingTop: pathname === '/' ? '0' : '70px' }}>{children}</main>
 
         {/* Footer */}
         <footer

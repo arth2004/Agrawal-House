@@ -44,8 +44,6 @@ export default async function HomePage() {
       style={{
         display: "flex",
         flexDirection: "column",
-        gap: "96px",
-        paddingBottom: "96px",
       }}
     >
       {/* 1. Cinematic Luxury Hero Section */}
@@ -59,13 +57,13 @@ export default async function HomePage() {
           justifyContent: "center",
           color: "#FFFFFF",
           backgroundImage:
-            'linear-gradient(180deg, rgba(10, 8, 7, 0.82) 0%, rgba(18, 14, 12, 0.45) 40%, rgba(18, 14, 12, 0.85) 90%, #FAF8F5 100%), url("/images/hero_sunset.jpg")',
+            'linear-gradient(180deg, rgba(10, 8, 7, 0.82) 0%, rgba(18, 14, 12, 0.45) 40%, rgba(18, 14, 12, 0.85) 90%, #F8F5EE 100%), url("/images/hero_sunset.jpg")',
           backgroundSize: "cover",
           backgroundPosition: "center",
           backgroundAttachment: "scroll",
-          marginTop: "-116px", // Pull up behind the header + top bar
-          paddingTop: "140px",
-          paddingBottom: "60px",
+          marginTop: "0",
+          paddingTop: "120px",
+          paddingBottom: "72px",
         }}
       >
         <div
@@ -207,15 +205,16 @@ export default async function HomePage() {
       </section>
 
       {/* 2. Intro Story Section */}
-      <section className="container">
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
-            gap: "56px",
-            alignItems: "center",
-          }}
-        >
+      <section style={{ padding: "88px 0" }}>
+        <div className="container">
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
+              gap: "56px",
+              alignItems: "center",
+            }}
+          >
           <div>
             <span
               style={{
@@ -357,14 +356,16 @@ export default async function HomePage() {
             </div>
           </div>
         </div>
+        </div>
       </section>
 
       {/* 3. Rooms & Accommodation Showcase */}
-      <section className="container">
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
+      <section className="sandstone-band" style={{ padding: "88px 0" }}>
+        <div className="container">
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
             alignItems: "flex-end",
             marginBottom: "48px",
             flexWrap: "wrap",
@@ -516,22 +517,16 @@ export default async function HomePage() {
             </div>
           ))}
         </div>
+        </div>
       </section>
 
       {/* 4. Spiritual Proximity & Ujjain Temple Distances */}
-      <section
-        style={{
-          backgroundColor: "var(--bg-secondary)",
-          padding: "80px 0",
-          borderTop: "1px solid var(--border-color)",
-          borderBottom: "1px solid var(--border-color)",
-        }}
-      >
+      <section className="heritage-dark-band" style={{ padding: "96px 0" }}>
         <div className="container">
           <div style={{ textAlign: "center", marginBottom: "52px" }}>
             <span
               style={{
-                color: "var(--primary)",
+                color: "#E5C07B",
                 fontWeight: "600",
                 textTransform: "uppercase",
                 letterSpacing: "0.15em",
@@ -545,13 +540,14 @@ export default async function HomePage() {
                 fontSize: "clamp(2rem, 3.5vw, 2.8rem)",
                 marginTop: "8px",
                 fontFamily: "var(--font-serif)",
+                color: "#FAF8F5",
               }}
             >
               Stay Close to Sacred Ujjain Landmarks
             </h2>
             <p
               style={{
-                color: "var(--text-secondary)",
+                color: "rgba(250, 248, 245, 0.78)",
                 maxWidth: "600px",
                 margin: "12px auto 0 auto",
                 fontSize: "1rem",
@@ -571,111 +567,131 @@ export default async function HomePage() {
             }}
           >
             <div
-              className="card"
               style={{
-                padding: "24px",
-                backgroundColor: "#FFFFFF",
+                padding: "28px 20px",
+                background: "rgba(255, 255, 255, 0.05)",
+                backdropFilter: "blur(12px)",
+                WebkitBackdropFilter: "blur(12px)",
+                border: "1px solid rgba(229, 192, 123, 0.22)",
+                borderRadius: "var(--radius-md)",
                 textAlign: "center",
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
-                gap: "8px",
+                gap: "10px",
+                boxShadow: "0 10px 28px rgba(0, 0, 0, 0.3)",
               }}
             >
-              <span style={{ fontSize: "2rem" }}>🕉️</span>
-              <h3 style={{ fontSize: "1.15rem", fontWeight: "600" }}>Mahakaleshwar Temple</h3>
-              <span style={{ color: "var(--primary)", fontWeight: "700", fontSize: "1.2rem" }}>
+              <span style={{ fontSize: "2.2rem" }}>🕉️</span>
+              <h3 style={{ fontSize: "1.15rem", fontWeight: "600", color: "#FFFFFF" }}>Mahakaleshwar Temple</h3>
+              <span style={{ color: "#E5C07B", fontWeight: "700", fontSize: "1.25rem" }}>
                 8 - 10 Mins
               </span>
-              <p style={{ fontSize: "0.82rem", color: "var(--text-muted)" }}>
+              <p style={{ fontSize: "0.85rem", color: "rgba(250, 248, 245, 0.72)" }}>
                 Quick auto or e-rickshaw ride for Bhasma Aarti & Darshan
               </p>
             </div>
 
             <div
-              className="card"
               style={{
-                padding: "24px",
-                backgroundColor: "#FFFFFF",
+                padding: "28px 20px",
+                background: "rgba(255, 255, 255, 0.05)",
+                backdropFilter: "blur(12px)",
+                WebkitBackdropFilter: "blur(12px)",
+                border: "1px solid rgba(229, 192, 123, 0.22)",
+                borderRadius: "var(--radius-md)",
                 textAlign: "center",
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
-                gap: "8px",
+                gap: "10px",
+                boxShadow: "0 10px 28px rgba(0, 0, 0, 0.3)",
               }}
             >
-              <span style={{ fontSize: "2rem" }}>✨</span>
-              <h3 style={{ fontSize: "1.15rem", fontWeight: "600" }}>Mahakal Lok Corridor</h3>
-              <span style={{ color: "var(--primary)", fontWeight: "700", fontSize: "1.2rem" }}>
+              <span style={{ fontSize: "2.2rem" }}>✨</span>
+              <h3 style={{ fontSize: "1.15rem", fontWeight: "600", color: "#FFFFFF" }}>Mahakal Lok Corridor</h3>
+              <span style={{ color: "#E5C07B", fontWeight: "700", fontSize: "1.25rem" }}>
                 8 Mins
               </span>
-              <p style={{ fontSize: "0.82rem", color: "var(--text-muted)" }}>
+              <p style={{ fontSize: "0.85rem", color: "rgba(250, 248, 245, 0.72)" }}>
                 Spectacular spiritual heritage corridor & light show
               </p>
             </div>
 
             <div
-              className="card"
               style={{
-                padding: "24px",
-                backgroundColor: "#FFFFFF",
+                padding: "28px 20px",
+                background: "rgba(255, 255, 255, 0.05)",
+                backdropFilter: "blur(12px)",
+                WebkitBackdropFilter: "blur(12px)",
+                border: "1px solid rgba(229, 192, 123, 0.22)",
+                borderRadius: "var(--radius-md)",
                 textAlign: "center",
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
-                gap: "8px",
+                gap: "10px",
+                boxShadow: "0 10px 28px rgba(0, 0, 0, 0.3)",
               }}
             >
-              <span style={{ fontSize: "2rem" }}>🌺</span>
-              <h3 style={{ fontSize: "1.15rem", fontWeight: "600" }}>Harsiddhi Mata Mandir</h3>
-              <span style={{ color: "var(--primary)", fontWeight: "700", fontSize: "1.2rem" }}>
+              <span style={{ fontSize: "2.2rem" }}>🌺</span>
+              <h3 style={{ fontSize: "1.15rem", fontWeight: "600", color: "#FFFFFF" }}>Harsiddhi Mata Mandir</h3>
+              <span style={{ color: "#E5C07B", fontWeight: "700", fontSize: "1.25rem" }}>
                 5 - 7 Mins
               </span>
-              <p style={{ fontSize: "0.82rem", color: "var(--text-muted)" }}>
+              <p style={{ fontSize: "0.85rem", color: "rgba(250, 248, 245, 0.72)" }}>
                 Revered 51 Shaktipeeth with twin deepstambhs
               </p>
             </div>
 
             <div
-              className="card"
               style={{
-                padding: "24px",
-                backgroundColor: "#FFFFFF",
+                padding: "28px 20px",
+                background: "rgba(255, 255, 255, 0.05)",
+                backdropFilter: "blur(12px)",
+                WebkitBackdropFilter: "blur(12px)",
+                border: "1px solid rgba(229, 192, 123, 0.22)",
+                borderRadius: "var(--radius-md)",
                 textAlign: "center",
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
-                gap: "8px",
+                gap: "10px",
+                boxShadow: "0 10px 28px rgba(0, 0, 0, 0.3)",
               }}
             >
-              <span style={{ fontSize: "2rem" }}>🌊</span>
-              <h3 style={{ fontSize: "1.15rem", fontWeight: "600" }}>Ram Ghat (Shipra)</h3>
-              <span style={{ color: "var(--primary)", fontWeight: "700", fontSize: "1.2rem" }}>
+              <span style={{ fontSize: "2.2rem" }}>🌊</span>
+              <h3 style={{ fontSize: "1.15rem", fontWeight: "600", color: "#FFFFFF" }}>Ram Ghat (Shipra)</h3>
+              <span style={{ color: "#E5C07B", fontWeight: "700", fontSize: "1.25rem" }}>
                 6 Mins
               </span>
-              <p style={{ fontSize: "0.82rem", color: "var(--text-muted)" }}>
+              <p style={{ fontSize: "0.85rem", color: "rgba(250, 248, 245, 0.72)" }}>
                 Holy snan ghat and evening Shipra Aarti
               </p>
             </div>
 
             <div
-              className="card"
               style={{
-                padding: "24px",
-                backgroundColor: "#FFFFFF",
+                padding: "28px 20px",
+                background: "rgba(255, 255, 255, 0.05)",
+                backdropFilter: "blur(12px)",
+                WebkitBackdropFilter: "blur(12px)",
+                border: "1px solid rgba(229, 192, 123, 0.22)",
+                borderRadius: "var(--radius-md)",
                 textAlign: "center",
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
-                gap: "8px",
+                gap: "10px",
+                boxShadow: "0 10px 28px rgba(0, 0, 0, 0.3)",
               }}
             >
-              <span style={{ fontSize: "2rem" }}>🚉</span>
-              <h3 style={{ fontSize: "1.15rem", fontWeight: "600" }}>Railway Station</h3>
-              <span style={{ color: "var(--primary)", fontWeight: "700", fontSize: "1.2rem" }}>
+              <span style={{ fontSize: "2.2rem" }}>🚉</span>
+              <h3 style={{ fontSize: "1.15rem", fontWeight: "600", color: "#FFFFFF" }}>Railway Station</h3>
+              <span style={{ color: "#E5C07B", fontWeight: "700", fontSize: "1.25rem" }}>
                 10 - 12 Mins
               </span>
-              <p style={{ fontSize: "0.82rem", color: "var(--text-muted)" }}>
+              <p style={{ fontSize: "0.85rem", color: "rgba(250, 248, 245, 0.72)" }}>
                 Convenient transit connectivity across the city
               </p>
             </div>
@@ -687,7 +703,11 @@ export default async function HomePage() {
               target="_blank"
               rel="noopener noreferrer"
               className="btn btn-primary"
-              style={{ padding: "14px 32px" }}
+              style={{
+                padding: "14px 34px",
+                border: "1px solid rgba(229, 192, 123, 0.35)",
+                boxShadow: "0 4px 18px rgba(194, 65, 12, 0.4)",
+              }}
             >
               <Compass size={16} /> Open Location in Google Maps
             </a>
@@ -696,75 +716,78 @@ export default async function HomePage() {
       </section>
 
       {/* 5. Services Section */}
-      <section className="container">
-        <div style={{ display: "flex", flexDirection: "column", gap: "28px" }}>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "flex-end",
-              justifyContent: "space-between",
-              gap: "20px",
-              flexWrap: "wrap",
-            }}
-          >
-            <div>
-              <span
-                style={{
-                  color: "var(--primary)",
-                  fontWeight: "600",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.15em",
-                  fontSize: "0.85rem",
-                }}
-              >
-                Our Offerings
-              </span>
-              <h2
-                style={{
-                  fontSize: "clamp(2rem, 3.5vw, 2.8rem)",
-                  marginTop: "8px",
-                  fontFamily: "var(--font-serif)",
-                }}
-              >
-                Services Tailored for Pilgrims
-              </h2>
+      <section style={{ padding: "92px 0" }}>
+        <div className="container">
+          <div style={{ display: "flex", flexDirection: "column", gap: "28px" }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "flex-end",
+                justifyContent: "space-between",
+                gap: "20px",
+                flexWrap: "wrap",
+              }}
+            >
+              <div>
+                <span
+                  style={{
+                    color: "var(--primary)",
+                    fontWeight: "600",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.15em",
+                    fontSize: "0.85rem",
+                  }}
+                >
+                  Our Offerings
+                </span>
+                <h2
+                  style={{
+                    fontSize: "clamp(2rem, 3.5vw, 2.8rem)",
+                    marginTop: "8px",
+                    fontFamily: "var(--font-serif)",
+                  }}
+                >
+                  Services Tailored for Pilgrims
+                </h2>
+              </div>
+              <Link href="/services" className="btn btn-outline" style={{ fontSize: "0.85rem" }}>
+                View All Services <ArrowRight size={16} />
+              </Link>
             </div>
-            <Link href="/services" className="btn btn-outline" style={{ fontSize: "0.85rem" }}>
-              View All Services <ArrowRight size={16} />
-            </Link>
-          </div>
 
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-              gap: "28px",
-            }}
-          >
-            {activeServices.map((service) => (
-              <ServiceCard key={service.id} service={service} />
-            ))}
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+                gap: "28px",
+              }}
+            >
+              {activeServices.map((service) => (
+                <ServiceCard key={service.id} service={service} />
+              ))}
+            </div>
           </div>
         </div>
       </section>
 
       {/* 6. MP Tourism Certification Section */}
-      <section className="container">
-        <div
-          className="card"
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-            gap: "40px",
-            alignItems: "center",
-            padding: "44px",
-            backgroundColor: "#FFFFFF",
-            border: "1px solid var(--border-color)",
-            boxShadow: "var(--shadow-md)",
-            overflow: "hidden",
-            position: "relative",
-          }}
-        >
+      <section style={{ padding: "0 0 92px 0" }}>
+        <div className="container">
+          <div
+            className="card"
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+              gap: "40px",
+              alignItems: "center",
+              padding: "44px",
+              backgroundColor: "var(--bg-card)",
+              border: "1px solid var(--border-color)",
+              boxShadow: "var(--shadow-md)",
+              overflow: "hidden",
+              position: "relative",
+            }}
+          >
           <div
             style={{
               position: "absolute",
@@ -923,11 +946,13 @@ export default async function HomePage() {
             />
           </div>
         </div>
+        </div>
       </section>
 
       {/* 7. Google Reviews Section */}
-      <section className="container">
-        <div style={{ textAlign: "center", marginBottom: "48px" }}>
+      <section className="sandstone-band" style={{ padding: "92px 0 96px 0" }}>
+        <div className="container">
+          <div style={{ textAlign: "center", marginBottom: "48px" }}>
           <span
             style={{
               color: "var(--primary)",
@@ -997,7 +1022,7 @@ export default async function HomePage() {
             className="card"
             style={{
               padding: "32px",
-              backgroundColor: "#FFFFFF",
+              backgroundColor: "var(--bg-card)",
               border: "1px solid var(--border-color)",
               boxShadow: "var(--shadow-sm)",
               display: "flex",
@@ -1096,7 +1121,7 @@ export default async function HomePage() {
             className="card"
             style={{
               padding: "32px",
-              backgroundColor: "#FFFFFF",
+              backgroundColor: "var(--bg-card)",
               border: "1px solid var(--border-color)",
               boxShadow: "var(--shadow-sm)",
               display: "flex",
@@ -1182,7 +1207,7 @@ export default async function HomePage() {
             className="card"
             style={{
               padding: "32px",
-              backgroundColor: "#FFFFFF",
+              backgroundColor: "var(--bg-card)",
               border: "1px solid var(--border-color)",
               boxShadow: "var(--shadow-sm)",
               display: "flex",
@@ -1295,6 +1320,7 @@ export default async function HomePage() {
           >
             Read All Reviews on Google Maps <ExternalLink size={16} />
           </a>
+        </div>
         </div>
       </section>
     </div>

@@ -120,7 +120,7 @@ export default function EnquiryPage() {
           className="card"
           style={{
             padding: '40px',
-            backgroundColor: '#FFFFFF',
+            backgroundColor: 'var(--bg-card)',
             border: '1px solid var(--border-color)',
             boxShadow: 'var(--shadow-md)',
           }}

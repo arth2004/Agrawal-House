@@ -33,26 +33,28 @@
   --font-serif: 'Playfair Display', serif;
   --font-sans: 'Outfit', sans-serif;
 
-  /* Color Palette (Nature & Terracotta) */
-  --bg-primary: #FAF8F5;
-  --bg-secondary: #F3ECE3;
-  --bg-card: #FFFFFF;
+  /* Royal Heritage Palette (Warm Limestone, Antique Sandstone, Pearl & Deep Emerald) */
+  --bg-primary: #F8F5EE;        /* Warm Limestone Cream - replaces stark cold white */
+  --bg-secondary: #EFE7DA;      /* Antique Sandstone */
+  --bg-card: #FAF6F0;           /* Warm Pearl Ivory */
+  --bg-dark-accent: #111815;    /* Deep Royal Heritage Slate-Emerald */
   --text-primary: #1C1917;
-  --text-secondary: #57534E;
-  --text-muted: #878179;
+  --text-secondary: #575047;
+  --text-muted: #8A8175;
   
-  --primary: #C2410C;       /* Terracotta Clay */
-  --primary-light: #FFedd5; /* Soft Peach */
+  --primary: #C2410C;           /* Terracotta Clay */
+  --primary-light: #FFedd5;     /* Soft Peach */
   --primary-hover: #9A3412;
   
-  --secondary: #14532D;     /* Forest Green */
+  --secondary: #14532D;         /* Forest Green */
   --secondary-light: #D1FAE5;
   --secondary-hover: #166534;
   
-  --accent: #D97706;        /* Warm Gold */
+  --accent: #D97706;            /* Warm Gold */
   --accent-light: #FEF3C7;
+  --gold-glow: #E5C07B;
   
-  --border-color: #E7DFD5;
+  --border-color: #E2D7C7;       /* Warm Sandstone Border */
   --border-focus: #C2410C;
   
   /* Layout and Shapes */
@@ -67,10 +69,10 @@
   
   --max-width: 1200px;
   
-  /* Shadows */
-  --shadow-sm: 0 1px 3px rgba(28, 25, 23, 0.05);
-  --shadow-md: 0 4px 20px rgba(28, 25, 23, 0.06);
-  --shadow-lg: 0 12px 30px rgba(28, 25, 23, 0.08);
+  /* Warm Ambient Shadows */
+  --shadow-sm: 0 2px 6px rgba(50, 35, 20, 0.05);
+  --shadow-md: 0 8px 24px rgba(50, 35, 20, 0.07);
+  --shadow-lg: 0 16px 36px rgba(50, 35, 20, 0.1);
 }
 
 /* Reset and Base Styles */
@@ -87,6 +89,10 @@ html {
 
 body {
   background-color: var(--bg-primary);
+  background-image: 
+    radial-gradient(circle at 12% 15%, rgba(229, 192, 123, 0.06) 0%, transparent 45%),
+    radial-gradient(circle at 88% 60%, rgba(194, 65, 12, 0.04) 0%, transparent 45%);
+  background-attachment: fixed;
   color: var(--text-primary);
   font-family: var(--font-sans);
   min-height: 100%;
@@ -95,6 +101,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
 
 main {
   flex: 1;
@@ -196,14 +203,30 @@ img {
   border-radius: var(--radius-md);
   border: 1px solid var(--border-color);
   box-shadow: var(--shadow-sm);
-  transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+  transition: transform var(--transition-normal), box-shadow var(--transition-normal), border-color var(--transition-normal);
   overflow: hidden;
 }
 
 .card:hover {
   transform: translateY(-4px);
-  box-shadow: var(--shadow-lg);
+  box-shadow: var(--shadow-md);
+  border-color: rgba(194, 65, 12, 0.35);
 }
+
+/* Heritage Luxury Section Bands */
+.heritage-dark-band {
+  background: linear-gradient(160deg, #0e1612 0%, #14201a 50%, #0d1410 100%);
+  color: #FAF8F5;
+  border-top: 1px solid rgba(229, 192, 123, 0.15);
+  border-bottom: 1px solid rgba(229, 192, 123, 0.15);
+}
+
+.sandstone-band {
+  background-color: var(--bg-secondary);
+  border-top: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color);
+}
+
 
 /* Animations */
 @keyframes fadeIn {

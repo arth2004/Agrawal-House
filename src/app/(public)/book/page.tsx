@@ -181,7 +181,7 @@ function BookingForm() {
           maxWidth: "600px",
           margin: "40px auto",
           padding: "40px",
-          backgroundColor: "#FFFFFF",
+          backgroundColor: "var(--bg-card)",
           borderRadius: "var(--radius-lg)",
           border: "1px solid var(--border-color)",
           boxShadow: "var(--shadow-md)",
@@ -296,7 +296,7 @@ function BookingForm() {
         className="card"
         style={{
           padding: "40px",
-          backgroundColor: "#FFFFFF",
+          backgroundColor: "var(--bg-card)",
           border: "1px solid var(--border-color)",
           boxShadow: "var(--shadow-md)",
         }}

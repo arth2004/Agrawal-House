@@ -29,13 +29,13 @@ export default function HeroBookingBar() {
   return (
     <div
       style={{
-        backgroundColor: "rgba(255, 255, 255, 0.96)",
+        backgroundColor: "rgba(250, 246, 240, 0.96)",
         backdropFilter: "blur(16px)",
         WebkitBackdropFilter: "blur(16px)",
         borderRadius: "var(--radius-lg)",
         padding: "18px 24px",
-        boxShadow: "0 20px 40px rgba(0, 0, 0, 0.25)",
-        border: "1px solid rgba(255, 255, 255, 0.8)",
+        boxShadow: "0 20px 40px rgba(40, 28, 16, 0.18)",
+        border: "1px solid rgba(226, 215, 199, 0.9)",
         width: "100%",
         maxWidth: "1060px",
         margin: "0 auto",

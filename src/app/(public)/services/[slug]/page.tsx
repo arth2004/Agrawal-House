@@ -37,7 +37,7 @@ export default async function ServiceDetailPage({ params }: ServiceDetailPagePro
         className="card"
         style={{
           overflow: 'hidden',
-          backgroundColor: '#FFFFFF',
+          backgroundColor: 'var(--bg-card)',
           marginBottom: '36px',
         }}
       >
