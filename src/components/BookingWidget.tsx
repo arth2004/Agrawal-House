@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Calendar, Users, ArrowRight, AlertCircle, CheckCircle } from 'lucide-react';
 import { BlockedDate, Booking } from '@/lib/types';
+import { bookingOverlapsBlockedDate, bookingOverlapsBooking } from '@/lib/availability';
 import WhatsAppBookButton from '@/components/WhatsAppBookButton';
 
 interface BookingWidgetProps {
@@ -38,18 +39,6 @@ export default function BookingWidget({
 
   // Minimum date selection constraint (today)
   const todayStr = new Date().toISOString().split('T')[0];
-
-  // Helper: check if range overlaps
-  const checkOverlap = (start1: string, end1: string, start2: string, end2: string) => {
-    // Parse dates to compare timestamp values
-    const s1 = new Date(start1).getTime();
-    const e1 = new Date(end1).getTime();
-    const s2 = new Date(start2).getTime();
-    const e2 = new Date(end2).getTime();
-
-    // Standard interval overlap check: (s1 < e2) and (e1 > s2)
-    return s1 < e2 && e1 > s2;
-  };
 
   // Recalculate nights and availability status on date changes
   useEffect(() => {
@@ -87,22 +76,22 @@ export default function BookingWidget({
     setIsChecking(true);
 
     setTimeout(() => {
-      // 1. Check against blocked dates
-      const isBlocked = blockedDates.some(block => 
-        checkOverlap(checkIn, checkOut, block.start_date, block.end_date)
+      // 1. Check against blocked dates (MMT / Airbnb / manual blocks)
+      const isBlocked = blockedDates.some((block) => 
+        bookingOverlapsBlockedDate(checkIn, checkOut, block.start_date, block.end_date)
       );
 
       if (isBlocked) {
         setAvailabilityStatus('unavailable');
-        setMessage('The selected dates overlap with a blocked maintenance window.');
+        setMessage('The selected dates are unavailable or blocked.');
         setIsChecking(false);
         return;
       }
 
       // 2. Check against existing confirmed or pending bookings
-      const isBooked = bookings.some(booking => {
+      const isBooked = bookings.some((booking) => {
         const activeBooking = booking.status === 'confirmed' || booking.status === 'pending';
-        return activeBooking && checkOverlap(checkIn, checkOut, booking.check_in, booking.check_out);
+        return activeBooking && bookingOverlapsBooking(checkIn, checkOut, booking.check_in, booking.check_out);
       });
 
       if (isBooked) {

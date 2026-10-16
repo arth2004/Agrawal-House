@@ -3,7 +3,11 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { db } from "@/lib/db";
 import { BlockedDate, Booking, Room, IcalSyncConfig } from "@/lib/types";
-import { dateRangesOverlap, hasActiveBooking } from "@/lib/availability";
+import {
+  blockedDateOverlapsBlockedDate,
+  bookingOverlapsBlockedDate,
+  hasActiveBooking,
+} from "@/lib/availability";
 import {
   CalendarRange,
   Plus,
@@ -265,7 +269,7 @@ export default function AdminCalendarPage() {
     const manualOverlap = blockedDates.find(
       (existing) =>
         existing.room_id === roomId &&
-        dateRangesOverlap(
+        blockedDateOverlapsBlockedDate(
           startDate,
           endDate,
           existing.start_date,
@@ -275,7 +279,7 @@ export default function AdminCalendarPage() {
 
     if (manualOverlap) {
       setError(
-        "These dates overlap with an existing manual block for this room. Unblock or adjust it first.",
+        "These dates overlap with an existing block for this room. Unblock or adjust it first.",
       );
       return;
     }
@@ -284,11 +288,11 @@ export default function AdminCalendarPage() {
       (booking) =>
         booking.room_id === roomId &&
         hasActiveBooking(booking) &&
-        dateRangesOverlap(
-          startDate,
-          endDate,
+        bookingOverlapsBlockedDate(
           booking.check_in,
           booking.check_out,
+          startDate,
+          endDate,
         ),
     );
 

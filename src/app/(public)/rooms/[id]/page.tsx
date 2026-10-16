@@ -2,6 +2,7 @@ import React from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
+import { syncIfStale } from "@/lib/syncService";
 import BookingWidget from "@/components/BookingWidget";
 import RoomGallery from "@/components/RoomGallery";
 import { ArrowLeft, Check, Sparkles, Shield } from "lucide-react";
@@ -19,6 +20,9 @@ export default async function RoomDetailPage({ params }: RoomDetailPageProps) {
   if (!room) {
     notFound();
   }
+
+  // Just-in-Time Auto-Sync: if feeds haven't synced in > 10m, refresh OTA dates
+  await syncIfStale(id);
 
   // Fetch blocked dates and active bookings for this room
   const blockedDates = await db.getBlockedDates(id);
