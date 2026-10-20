@@ -354,64 +354,191 @@ export default function ServicesAdminClient({ initialServices }: { initialServic
             </button>
             <h2 style={{ fontSize: '1.8rem', marginBottom: '24px' }}>Edit Service</h2>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '16px' }}>
-              <div>
+            {/* Row 1: Name and Slug */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px', marginBottom: '16px' }}>
+              <div style={{ minWidth: 0 }}>
                 <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.8rem', fontWeight: 700 }}>Name</label>
-                <input value={editingService.name} onChange={(event) => setEditingService({ ...editingService, name: event.target.value, slug: editingService.slug || slugifyServiceName(event.target.value) })} style={{ width: '100%', padding: '12px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)' }} />
+                <input
+                  value={editingService.name}
+                  onChange={(event) =>
+                    setEditingService({
+                      ...editingService,
+                      name: event.target.value,
+                      slug: editingService.slug || slugifyServiceName(event.target.value),
+                    })
+                  }
+                  style={{
+                    width: '100%',
+                    boxSizing: 'border-box',
+                    padding: '12px',
+                    borderRadius: 'var(--radius-sm)',
+                    border: '1px solid var(--border-color)',
+                    minWidth: 0,
+                  }}
+                />
               </div>
-              <div>
+              <div style={{ minWidth: 0 }}>
                 <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.8rem', fontWeight: 700 }}>Slug</label>
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  <input value={editingService.slug} onChange={(event) => setEditingService({ ...editingService, slug: event.target.value })} style={{ flex: 1, padding: '12px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)' }} />
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', width: '100%', minWidth: 0 }}>
+                  <input
+                    value={editingService.slug}
+                    onChange={(event) =>
+                      setEditingService({ ...editingService, slug: event.target.value })
+                    }
+                    style={{
+                      flex: 1,
+                      minWidth: 0,
+                      boxSizing: 'border-box',
+                      padding: '12px',
+                      borderRadius: 'var(--radius-sm)',
+                      border: '1px solid var(--border-color)',
+                    }}
+                  />
                   <button
                     type="button"
                     className="btn btn-outline"
-                    onClick={() => setEditingService({ ...editingService, slug: slugifyServiceName(editingService.name || editingService.slug) })}
-                    style={{ padding: '12px 14px', borderRadius: 'var(--radius-sm)' }}
+                    onClick={() =>
+                      setEditingService({
+                        ...editingService,
+                        slug: slugifyServiceName(editingService.name || editingService.slug),
+                      })
+                    }
+                    style={{
+                      padding: '11px 14px',
+                      borderRadius: 'var(--radius-sm)',
+                      flexShrink: 0,
+                      whiteSpace: 'nowrap',
+                      fontSize: '0.85rem',
+                    }}
                   >
                     Generate
                   </button>
                 </div>
               </div>
-              <div>
+            </div>
+
+            {/* Row 2: Icon, Status, and Sort Order */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '16px' }}>
+              <div style={{ minWidth: 0 }}>
                 <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.8rem', fontWeight: 700 }}>Icon</label>
-                <select value={editingService.icon} onChange={(event) => setEditingService({ ...editingService, icon: event.target.value })} style={{ width: '100%', padding: '12px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)' }}>
+                <select
+                  value={editingService.icon}
+                  onChange={(event) => setEditingService({ ...editingService, icon: event.target.value })}
+                  style={{
+                    width: '100%',
+                    boxSizing: 'border-box',
+                    padding: '12px',
+                    borderRadius: 'var(--radius-sm)',
+                    border: '1px solid var(--border-color)',
+                    backgroundColor: '#FFFFFF',
+                    minWidth: 0,
+                  }}
+                >
                   {SERVICE_ICON_OPTIONS.map((option) => (
-                    <option key={option.value} value={option.value}>{option.label}</option>
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
                   ))}
                 </select>
               </div>
-              <div>
-                <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.8rem', fontWeight: 700 }}>Sort Order</label>
-                <input type="number" value={editingService.sort_order} onChange={(event) => setEditingService({ ...editingService, sort_order: Number(event.target.value) })} style={{ width: '100%', padding: '12px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)' }} />
-              </div>
-              <div>
+              <div style={{ minWidth: 0 }}>
                 <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.8rem', fontWeight: 700 }}>Status</label>
                 <select
                   value={editingService.status}
-                  onChange={(event) => setEditingService({ ...editingService, status: event.target.value as Service['status'] })}
-                  style={{ width: '100%', padding: '12px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)' }}
+                  onChange={(event) =>
+                    setEditingService({
+                      ...editingService,
+                      status: event.target.value as Service['status'],
+                    })
+                  }
+                  style={{
+                    width: '100%',
+                    boxSizing: 'border-box',
+                    padding: '12px',
+                    borderRadius: 'var(--radius-sm)',
+                    border: '1px solid var(--border-color)',
+                    backgroundColor: '#FFFFFF',
+                    minWidth: 0,
+                  }}
                 >
                   <option value="active">Active (Visible on site)</option>
                   <option value="paused">Paused (Hidden from site)</option>
                   <option value="inactive">Inactive (Hidden from site)</option>
                 </select>
               </div>
+              <div style={{ minWidth: 0 }}>
+                <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.8rem', fontWeight: 700 }}>Sort Order</label>
+                <input
+                  type="number"
+                  value={editingService.sort_order}
+                  onChange={(event) =>
+                    setEditingService({
+                      ...editingService,
+                      sort_order: Number(event.target.value),
+                    })
+                  }
+                  style={{
+                    width: '100%',
+                    boxSizing: 'border-box',
+                    padding: '12px',
+                    borderRadius: 'var(--radius-sm)',
+                    border: '1px solid var(--border-color)',
+                    minWidth: 0,
+                  }}
+                />
+              </div>
             </div>
 
             <div style={{ marginTop: '16px' }}>
               <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.8rem', fontWeight: 700 }}>Short Description</label>
-              <textarea rows={3} value={editingService.short_description} onChange={(event) => setEditingService({ ...editingService, short_description: event.target.value })} style={{ width: '100%', padding: '12px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)' }} />
+              <textarea
+                rows={3}
+                value={editingService.short_description}
+                onChange={(event) =>
+                  setEditingService({ ...editingService, short_description: event.target.value })
+                }
+                style={{
+                  width: '100%',
+                  boxSizing: 'border-box',
+                  padding: '12px',
+                  borderRadius: 'var(--radius-sm)',
+                  border: '1px solid var(--border-color)',
+                }}
+              />
             </div>
 
             <div style={{ marginTop: '16px' }}>
               <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.8rem', fontWeight: 700 }}>Cover Image</label>
-              <input value={editingService.cover_image} onChange={(event) => setEditingService({ ...editingService, cover_image: event.target.value })} style={{ width: '100%', padding: '12px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)' }} />
+              <input
+                value={editingService.cover_image}
+                onChange={(event) =>
+                  setEditingService({ ...editingService, cover_image: event.target.value })
+                }
+                style={{
+                  width: '100%',
+                  boxSizing: 'border-box',
+                  padding: '12px',
+                  borderRadius: 'var(--radius-sm)',
+                  border: '1px solid var(--border-color)',
+                }}
+              />
             </div>
 
             <div style={{ marginTop: '16px' }}>
               <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.8rem', fontWeight: 700 }}>Gallery URLs</label>
-              <textarea rows={3} value={galleryText} onChange={(event) => setGalleryText(event.target.value)} placeholder="Comma-separated image URLs" style={{ width: '100%', padding: '12px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)' }} />
+              <textarea
+                rows={3}
+                value={galleryText}
+                onChange={(event) => setGalleryText(event.target.value)}
+                placeholder="Comma-separated image URLs"
+                style={{
+                  width: '100%',
+                  boxSizing: 'border-box',
+                  padding: '12px',
+                  borderRadius: 'var(--radius-sm)',
+                  border: '1px solid var(--border-color)',
+                }}
+              />
             </div>
 
             <div style={{ marginTop: '16px' }}>
@@ -429,7 +556,19 @@ export default function ServicesAdminClient({ initialServices }: { initialServic
                   </button>
                 ))}
               </div>
-              <textarea rows={14} value={sectionsText} onChange={(event) => setSectionsText(event.target.value)} style={{ width: '100%', padding: '12px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)', fontFamily: 'monospace' }} />
+              <textarea
+                rows={14}
+                value={sectionsText}
+                onChange={(event) => setSectionsText(event.target.value)}
+                style={{
+                  width: '100%',
+                  boxSizing: 'border-box',
+                  padding: '12px',
+                  borderRadius: 'var(--radius-sm)',
+                  border: '1px solid var(--border-color)',
+                  fontFamily: 'monospace',
+                }}
+              />
             </div>
 
             <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '24px' }}>
