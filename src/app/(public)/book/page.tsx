@@ -13,6 +13,9 @@ import {
   User,
   FileText,
   CheckCircle2,
+  Tag,
+  TrendingUp,
+  Sparkles,
 } from "lucide-react";
 import WhatsAppBookButton from "@/components/WhatsAppBookButton";
 import HeritageLoader from "@/components/HeritageLoader";
@@ -106,8 +109,19 @@ function BookingForm() {
   const isFamilyRoom = room ? (room.name.toLowerCase().includes("family") || room.max_guests >= 4) : false;
   const hasExtraGuest = isFamilyRoom && guestsCount === 5;
   const extraGuestChargeTotal = hasExtraGuest ? 300 * numNights : 0;
-  const baseRoomTotal = dynamicTotal || (room ? numNights * room.base_price : 0);
+  const standardRoomTotal = room ? numNights * room.base_price : 0;
+  const baseRoomTotal = dynamicTotal || standardRoomTotal;
+  const priceDiff = baseRoomTotal - standardRoomTotal;
+  const hasDynamicRule = Boolean(priceBreakdown.some((b) => b.rule));
+  const isDiscount = priceDiff < 0;
+  const isSurcharge = priceDiff > 0;
   const totalPrice = baseRoomTotal + extraGuestChargeTotal;
+
+  const appliedRuleNames = priceBreakdown
+    .filter((b) => b.rule)
+    .map((b) => b.rule?.name)
+    .filter((name, idx, self) => name && self.indexOf(name) === idx)
+    .join(", ");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -679,80 +693,187 @@ function BookingForm() {
               </div>
             </div>
 
-              {/* Calculations */}
+              {/* Calculations & Price Breakdown */}
             <div
               style={{ display: "flex", flexDirection: "column", gap: "12px" }}
             >
-              {priceBreakdown.length > 0 ? (
-                <>
-                  {priceBreakdown.map((item, idx) => (
-                    <div
-                      key={idx}
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        fontSize: "0.9rem",
-                        color: item.rule ? "var(--text-secondary)" : "inherit",
-                      }}
-                    >
-                      <span>
-                        {new Date(item.date).toLocaleDateString("en-IN", {
-                          day: "numeric",
-                          month: "short",
-                        })}
-                        {item.rule && (
-                          <span
-                            style={{
-                              marginLeft: "6px",
-                              fontSize: "0.75rem",
-                              padding: "2px 6px",
-                              borderRadius: "4px",
-                              backgroundColor:
-                                item.rule.price_modifier > 1
-                                  ? "#FEF3C7"
-                                  : "#D1FAE5",
-                              color:
-                                item.rule.price_modifier > 1
-                                  ? "#92400E"
-                                  : "#065F46",
-                            }}
-                          >
-                            {item.rule.name}
-                          </span>
-                        )}
-                      </span>
-                      <span>₹{item.price}</span>
-                    </div>
-                  ))}
-                  <div
+              {/* Standard Base Rate */}
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  fontSize: "0.92rem",
+                  color: hasDynamicRule ? "var(--text-secondary)" : "inherit",
+                }}
+              >
+                <span>
+                  Base Rate (₹{room.base_price} × {numNights} night{numNights > 1 ? "s" : ""})
+                </span>
+                <span
+                  style={{
+                    textDecoration: hasDynamicRule && isDiscount ? "line-through" : "none",
+                  }}
+                >
+                  ₹{standardRoomTotal}
+                </span>
+              </div>
+
+              {/* Night-by-Night Breakdown (when dynamic rules apply or multi-night) */}
+              {priceBreakdown.length > 0 && (
+                <div
+                  style={{
+                    backgroundColor: "#FBF9F5",
+                    borderRadius: "6px",
+                    padding: "10px 12px",
+                    border: "1px solid var(--border-color)",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "8px",
+                  }}
+                >
+                  <span
                     style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      fontSize: "0.95rem",
-                      borderTop: "1px solid var(--border-color)",
-                      paddingTop: "8px",
-                      marginTop: "4px",
+                      fontSize: "0.75rem",
+                      fontWeight: "700",
+                      color: "var(--text-muted)",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.5px",
                     }}
                   >
-                    <span>Room Charges</span>
-                    <span>₹{baseRoomTotal}</span>
-                  </div>
-                </>
-              ) : (
+                    Night-by-Night Breakdown
+                  </span>
+                  {priceBreakdown.map((item, idx) => {
+                    const nightHasRule = Boolean(item.rule);
+                    const nightMod = item.rule?.price_modifier || 1;
+                    const nightDiscount = nightMod < 1;
+                    const nightSurcharge = nightMod > 1;
+
+                    return (
+                      <div
+                        key={idx}
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                          fontSize: "0.85rem",
+                        }}
+                      >
+                        <div style={{ display: "flex", alignItems: "center", gap: "6px", flexWrap: "wrap" }}>
+                          <span style={{ fontWeight: "500" }}>
+                            {new Date(item.date).toLocaleDateString("en-IN", {
+                              day: "numeric",
+                              month: "short",
+                            })}
+                          </span>
+                          {item.rule && (
+                            <span
+                              style={{
+                                fontSize: "0.72rem",
+                                padding: "2px 6px",
+                                borderRadius: "4px",
+                                fontWeight: "600",
+                                backgroundColor: nightSurcharge ? "#FEF3C7" : "#DCFCE7",
+                                color: nightSurcharge ? "#92400E" : "#15803D",
+                              }}
+                            >
+                              {item.rule.name} (
+                              {nightSurcharge
+                                ? `+${Math.round((nightMod - 1) * 100)}%`
+                                : `-${Math.round((1 - nightMod) * 100)}%`}
+                              )
+                            </span>
+                          )}
+                        </div>
+                        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                          {nightHasRule && (
+                            <span
+                              style={{
+                                textDecoration: "line-through",
+                                color: "var(--text-muted)",
+                                fontSize: "0.78rem",
+                              }}
+                            >
+                              ₹{room.base_price}
+                            </span>
+                          )}
+                          <span
+                            style={{
+                              fontWeight: "600",
+                              color: nightDiscount
+                                ? "#15803D"
+                                : nightSurcharge
+                                ? "#92400E"
+                                : "inherit",
+                            }}
+                          >
+                            ₹{item.price}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* Dynamic Discount Line Item */}
+              {hasDynamicRule && isDiscount && (
                 <div
                   style={{
                     display: "flex",
                     justifyContent: "space-between",
-                    fontSize: "0.95rem",
+                    fontSize: "0.88rem",
+                    color: "#15803D",
+                    fontWeight: "600",
+                    backgroundColor: "#F0FDF4",
+                    border: "1px solid #BBF7D0",
+                    padding: "8px 10px",
+                    borderRadius: "4px",
                   }}
                 >
-                  <span>
-                    ₹{room.base_price} x {numNights} nights
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+                    <Tag size={13} /> {appliedRuleNames || "Promotional Discount"}
                   </span>
-                  <span>₹{baseRoomTotal}</span>
+                  <span>-₹{Math.abs(priceDiff)}</span>
                 </div>
               )}
 
+              {/* Dynamic Surcharge Line Item */}
+              {hasDynamicRule && isSurcharge && (
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    fontSize: "0.88rem",
+                    color: "#92400E",
+                    fontWeight: "600",
+                    backgroundColor: "#FEF3C7",
+                    border: "1px solid #FDE68A",
+                    padding: "8px 10px",
+                    borderRadius: "4px",
+                  }}
+                >
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+                    <TrendingUp size={13} /> {appliedRuleNames || "Seasonal Surcharge"}
+                  </span>
+                  <span>+₹{priceDiff}</span>
+                </div>
+              )}
+
+              {/* Room Charges Subtotal */}
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  fontSize: "0.95rem",
+                  borderTop: "1px solid var(--border-color)",
+                  paddingTop: "8px",
+                }}
+              >
+                <span>Total Room Charges</span>
+                <span style={{ fontWeight: "600" }}>₹{baseRoomTotal}</span>
+              </div>
+
+              {/* Extra 5th Guest Charge (if applicable) */}
               {hasExtraGuest && (
                 <div
                   style={{
@@ -766,24 +887,65 @@ function BookingForm() {
                   }}
                 >
                   <span>Extra 5th Guest (+Mattress)</span>
-                  <span style={{ fontWeight: "600" }}>+₹{extraGuestChargeTotal} (₹300 x {numNights}n)</span>
+                  <span style={{ fontWeight: "600" }}>
+                    +₹{extraGuestChargeTotal} (₹300 x {numNights}n)
+                  </span>
                 </div>
               )}
 
+              {/* Grand Total Cost */}
               <div
                 style={{
                   display: "flex",
                   justifyContent: "space-between",
+                  alignItems: "baseline",
                   fontSize: "1.2rem",
                   fontWeight: "700",
                   borderTop: "1px dashed var(--border-color)",
                   paddingTop: "16px",
-                  marginTop: "8px",
+                  marginTop: "6px",
                 }}
               >
-                <span>Total Cost</span>
-                <span>₹{totalPrice}</span>
+                <div>
+                  <span>Total Cost</span>
+                  {hasDynamicRule && isDiscount && (
+                    <span
+                      style={{
+                        display: "block",
+                        fontSize: "0.75rem",
+                        color: "#15803D",
+                        fontWeight: "600",
+                      }}
+                    >
+                      (Includes ₹{Math.abs(priceDiff)} savings)
+                    </span>
+                  )}
+                </div>
+                <span style={{ color: "var(--primary)", fontSize: "1.45rem", fontWeight: "800" }}>
+                  ₹{totalPrice}
+                </span>
               </div>
+
+              {/* Savings Announcement Banner */}
+              {hasDynamicRule && isDiscount && (
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    backgroundColor: "#DCFCE7",
+                    color: "#15803D",
+                    padding: "8px 12px",
+                    borderRadius: "6px",
+                    fontSize: "0.82rem",
+                    fontWeight: "600",
+                    marginTop: "4px",
+                  }}
+                >
+                  <Sparkles size={14} style={{ flexShrink: 0 }} />
+                  <span>Great deal! You save ₹{Math.abs(priceDiff)} on this booking.</span>
+                </div>
+              )}
             </div>
 
             {/* Trust badge */}

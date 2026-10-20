@@ -609,12 +609,14 @@ export const db = {
     breakdown: { date: string; price: number; rule?: PricingRule }[];
   }> {
     const rules = await this.getPricingRules(roomId);
-    const start = new Date(checkIn);
-    const end = new Date(checkOut);
+    const [sY, sM, sD] = checkIn.split("-").map(Number);
+    const [eY, eM, eD] = checkOut.split("-").map(Number);
+    const start = new Date(Date.UTC(sY, sM - 1, sD));
+    const end = new Date(Date.UTC(eY, eM - 1, eD));
     const breakdown: { date: string; price: number; rule?: PricingRule }[] = [];
     let total = 0;
 
-    for (let d = new Date(start); d < end; d.setDate(d.getDate() + 1)) {
+    for (let d = new Date(start); d < end; d.setUTCDate(d.getUTCDate() + 1)) {
       const dateStr = d.toISOString().split("T")[0];
       const applicableRule = rules
         .filter(

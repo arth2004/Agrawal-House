@@ -2,9 +2,10 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Calendar, Users, ArrowRight, AlertCircle, CheckCircle } from 'lucide-react';
-import { BlockedDate, Booking } from '@/lib/types';
+import { Calendar, Users, ArrowRight, AlertCircle, CheckCircle, Tag, TrendingUp, Sparkles } from 'lucide-react';
+import { BlockedDate, Booking, PricingRule } from '@/lib/types';
 import { bookingOverlapsBlockedDate, bookingOverlapsBooking } from '@/lib/availability';
+import { db } from '@/lib/db';
 import WhatsAppBookButton from '@/components/WhatsAppBookButton';
 
 interface BookingWidgetProps {
@@ -37,6 +38,12 @@ export default function BookingWidget({
   const [message, setMessage] = useState('');
   const [numNights, setNumNights] = useState(0);
 
+  // Dynamic pricing state
+  const [dynamicPricing, setDynamicPricing] = useState<{
+    total: number;
+    breakdown: { date: string; price: number; rule?: PricingRule }[];
+  } | null>(null);
+
   // Minimum date selection constraint (today)
   const todayStr = new Date().toISOString().split('T')[0];
 
@@ -50,6 +57,7 @@ export default function BookingWidget({
         setAvailabilityStatus('error');
         setMessage('Check-out date must be after check-in date.');
         setNumNights(0);
+        setDynamicPricing(null);
         return;
       }
 
@@ -62,10 +70,41 @@ export default function BookingWidget({
       setNumNights(0);
       setAvailabilityStatus('idle');
       setMessage('');
+      setDynamicPricing(null);
     }
   }, [checkIn, checkOut]);
 
-  const handleCheckAvailability = (e: React.FormEvent) => {
+  // Fetch dynamic pricing as soon as valid dates are selected
+  useEffect(() => {
+    let isCancelled = false;
+    async function loadDynamicPricing() {
+      if (!roomId || !checkIn || !checkOut || numNights <= 0) {
+        setDynamicPricing(null);
+        return;
+      }
+
+      try {
+        const result = await db.calculateTotalPrice(
+          roomId,
+          checkIn,
+          checkOut,
+          basePrice
+        );
+        if (!isCancelled) {
+          setDynamicPricing(result);
+        }
+      } catch (err) {
+        console.error("Error calculating dynamic price in widget:", err);
+      }
+    }
+
+    loadDynamicPricing();
+    return () => {
+      isCancelled = true;
+    };
+  }, [roomId, checkIn, checkOut, basePrice, numNights]);
+
+  const handleCheckAvailability = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!checkIn || !checkOut) {
       setAvailabilityStatus('error');
@@ -75,8 +114,17 @@ export default function BookingWidget({
 
     setIsChecking(true);
 
-    setTimeout(() => {
-      // 1. Check against blocked dates (MMT / Airbnb / manual blocks)
+    try {
+      // 1. Fetch live dynamic pricing
+      const result = await db.calculateTotalPrice(
+        roomId,
+        checkIn,
+        checkOut,
+        basePrice
+      );
+      setDynamicPricing(result);
+
+      // 2. Check against blocked dates (MMT / Airbnb / manual blocks)
       const isBlocked = blockedDates.some((block) => 
         bookingOverlapsBlockedDate(checkIn, checkOut, block.start_date, block.end_date)
       );
@@ -88,7 +136,7 @@ export default function BookingWidget({
         return;
       }
 
-      // 2. Check against existing confirmed or pending bookings
+      // 3. Check against existing confirmed or pending bookings
       const isBooked = bookings.some((booking) => {
         const activeBooking = booking.status === 'confirmed' || booking.status === 'pending';
         return activeBooking && bookingOverlapsBooking(checkIn, checkOut, booking.check_in, booking.check_out);
@@ -103,17 +151,38 @@ export default function BookingWidget({
 
       setAvailabilityStatus('available');
       setMessage('Excellent choice! The room is available for your dates.');
+    } catch (err) {
+      console.error('Error during availability check:', err);
+      setAvailabilityStatus('available');
+      setMessage('The room is available for your dates.');
+    } finally {
       setIsChecking(false);
-    }, 600); // Small realistic delay for UI animation feel
+    }
   };
 
   const isFamilyRoom = roomName.toLowerCase().includes('family') || maxGuests >= 4;
   const effectiveMaxGuests = isFamilyRoom ? 5 : maxGuests;
   const hasExtraGuest = isFamilyRoom && guests === 5;
   const extraGuestChargePerNight = hasExtraGuest ? 300 : 0;
-  const baseTotal = numNights * basePrice;
+  
+  // Dynamic price calculations
+  const standardBaseTotal = numNights * basePrice;
+  const dynamicRoomTotal = dynamicPricing ? dynamicPricing.total : standardBaseTotal;
+  const priceDiff = dynamicRoomTotal - standardBaseTotal;
+  const hasDynamicRule = Boolean(dynamicPricing && dynamicPricing.breakdown.some((b) => b.rule));
+  const isDiscount = priceDiff < 0;
+  const isSurcharge = priceDiff > 0;
+  
   const extraGuestTotal = numNights * extraGuestChargePerNight;
-  const totalPrice = baseTotal + extraGuestTotal;
+  const totalPrice = dynamicRoomTotal + extraGuestTotal;
+  const effectiveNightlyRate = numNights > 0 ? Math.round(dynamicRoomTotal / numNights) : basePrice;
+
+  // Extract rule names
+  const appliedRuleNames = dynamicPricing?.breakdown
+    .filter((b) => b.rule)
+    .map((b) => b.rule?.name)
+    .filter((name, idx, self) => name && self.indexOf(name) === idx)
+    .join(', ');
 
   const handleBookNow = () => {
     if (availabilityStatus !== 'available') return;
@@ -134,12 +203,59 @@ export default function BookingWidget({
         top: '110px',
       }}
     >
+      {/* Price Header */}
       <div style={{ marginBottom: '24px', borderBottom: '1px solid var(--border-color)', paddingBottom: '16px' }}>
-        <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Price starting from</span>
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', marginTop: '4px' }}>
-          <span style={{ fontSize: '2rem', fontWeight: '700', color: 'var(--primary)' }}>₹{basePrice}</span>
+        <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
+          {hasDynamicRule && numNights > 0 ? 'Dynamic rate for selected dates' : 'Price starting from'}
+        </span>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginTop: '4px', flexWrap: 'wrap' }}>
+          {hasDynamicRule && isDiscount && (
+            <span style={{ fontSize: '1.2rem', textDecoration: 'line-through', color: 'var(--text-muted)' }}>
+              ₹{basePrice}
+            </span>
+          )}
+          <span style={{ fontSize: '2rem', fontWeight: '700', color: hasDynamicRule && isDiscount ? '#15803D' : 'var(--primary)' }}>
+            ₹{effectiveNightlyRate}
+          </span>
           <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>/ night</span>
+
+          {/* Badges for Discount or Surcharge */}
+          {hasDynamicRule && isDiscount && (
+            <span
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '4px',
+                fontSize: '0.75rem',
+                fontWeight: '700',
+                padding: '3px 8px',
+                borderRadius: '4px',
+                backgroundColor: '#DCFCE7',
+                color: '#15803D',
+              }}
+            >
+              <Sparkles size={12} /> Special Offer
+            </span>
+          )}
+          {hasDynamicRule && isSurcharge && (
+            <span
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '4px',
+                fontSize: '0.75rem',
+                fontWeight: '700',
+                padding: '3px 8px',
+                borderRadius: '4px',
+                backgroundColor: '#FEF3C7',
+                color: '#B45309',
+              }}
+            >
+              <TrendingUp size={12} /> Seasonal Rate
+            </span>
+          )}
         </div>
+
         {isFamilyRoom && (
           <div style={{ marginTop: '8px', display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.78rem', padding: '4px 10px', borderRadius: '4px', backgroundColor: '#FEF3C7', color: '#92400E', fontWeight: '500' }}>
             <span>Accommodates 4 guests (up to 5 with extra mattress @ ₹300/night)</span>
@@ -251,25 +367,95 @@ export default function BookingWidget({
           </div>
         )}
 
-        {/* Action Button */}
+        {/* Action Button & Detailed Pricing Breakdown */}
         {availabilityStatus === 'available' ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginTop: '8px' }}>
-            <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '16px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '0.95rem' }}>
-                <span>₹{basePrice} x {numNights} night{numNights > 1 ? 's' : ''}</span>
-                <span>₹{baseTotal}</span>
+            <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {/* Standard Base Rate */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.92rem', color: hasDynamicRule ? 'var(--text-secondary)' : 'var(--text-primary)' }}>
+                <span>Base Rate: ₹{basePrice} × {numNights} night{numNights > 1 ? 's' : ''}</span>
+                <span style={{ textDecoration: hasDynamicRule && isDiscount ? 'line-through' : 'none' }}>
+                  ₹{standardBaseTotal}
+                </span>
               </div>
+
+              {/* Dynamic Discount Row */}
+              {hasDynamicRule && isDiscount && (
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    fontSize: '0.88rem',
+                    color: '#15803D',
+                    fontWeight: '600',
+                    backgroundColor: '#F0FDF4',
+                    border: '1px solid #DCFCE7',
+                    padding: '6px 10px',
+                    borderRadius: '4px',
+                  }}
+                >
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                    <Tag size={13} /> {appliedRuleNames || 'Special Offer'}
+                  </span>
+                  <span>-₹{Math.abs(priceDiff)}</span>
+                </div>
+              )}
+
+              {/* Dynamic Surcharge Row */}
+              {hasDynamicRule && isSurcharge && (
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    fontSize: '0.88rem',
+                    color: '#92400E',
+                    fontWeight: '600',
+                    backgroundColor: '#FEF3C7',
+                    border: '1px solid #FDE68A',
+                    padding: '6px 10px',
+                    borderRadius: '4px',
+                  }}
+                >
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                    <TrendingUp size={13} /> {appliedRuleNames || 'Seasonal Rate'}
+                  </span>
+                  <span>+₹{priceDiff}</span>
+                </div>
+              )}
+
+              {/* Extra Guest Row */}
               {hasExtraGuest && (
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '0.9rem', color: '#B45309' }}>
-                  <span>Extra Person (5th guest + mattress): ₹300 x {numNights} night{numNights > 1 ? 's' : ''}</span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.88rem', color: '#B45309' }}>
+                  <span>Extra Person (5th guest + mattress): ₹300 × {numNights}n</span>
                   <span>+₹{extraGuestTotal}</span>
                 </div>
               )}
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: '700', fontSize: '1.1rem', marginTop: '12px', borderTop: '1px dashed var(--border-color)', paddingTop: '12px' }}>
-                <span>Total Amount</span>
-                <span>₹{totalPrice}</span>
+
+              {/* Total Amount */}
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'baseline',
+                  fontWeight: '700',
+                  fontSize: '1.1rem',
+                  marginTop: '8px',
+                  borderTop: '1px dashed var(--border-color)',
+                  paddingTop: '12px',
+                }}
+              >
+                <div>
+                  <span>Total Amount</span>
+                  {hasDynamicRule && isDiscount && (
+                    <span style={{ display: 'block', fontSize: '0.75rem', color: '#15803D', fontWeight: '600' }}>
+                      (You save ₹{Math.abs(priceDiff)})
+                    </span>
+                  )}
+                </div>
+                <span style={{ fontSize: '1.35rem', color: 'var(--primary)' }}>₹{totalPrice}</span>
               </div>
             </div>
+
             <button
               type="button"
               onClick={handleBookNow}
@@ -296,7 +482,7 @@ export default function BookingWidget({
             className="btn btn-secondary"
             style={{ width: '100%', padding: '14px', marginTop: '8px' }}
           >
-            {isChecking ? 'Checking Dates...' : 'Check Availability'}
+            {isChecking ? 'Checking Dates & Rates...' : 'Check Availability'}
           </button>
         )}
       </form>
