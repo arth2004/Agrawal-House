@@ -653,6 +653,25 @@ export const db = {
     return mockDB.addPricingRule(rule);
   },
 
+  async addPricingRules(rules: Omit<PricingRule, "id">[]): Promise<PricingRule[]> {
+    if (rules.length === 0) return [];
+    if (supabase) {
+      const { data, error } = await supabase
+        .from("pricing_rules")
+        .insert(rules)
+        .select();
+      if (error) {
+        throw error;
+      }
+      return data as PricingRule[];
+    }
+    const created: PricingRule[] = [];
+    for (const r of rules) {
+      created.push(await mockDB.addPricingRule(r));
+    }
+    return created;
+  },
+
   async updatePricingRule(
     id: string,
     updates: Partial<Omit<PricingRule, "id">>,
@@ -688,6 +707,23 @@ export const db = {
       return;
     }
     return mockDB.deletePricingRule(id);
+  },
+
+  async deletePricingRules(ids: string[]): Promise<void> {
+    if (ids.length === 0) return;
+    if (supabase) {
+      const { error } = await supabase
+        .from("pricing_rules")
+        .delete()
+        .in("id", ids);
+      if (error) {
+        throw error;
+      }
+      return;
+    }
+    for (const id of ids) {
+      await mockDB.deletePricingRule(id);
+    }
   },
 
   // --- SETTINGS ---
