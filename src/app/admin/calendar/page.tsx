@@ -306,11 +306,20 @@ export default function AdminCalendarPage() {
     );
   }, [blockedDates, bookings]);
 
-  // Counts for active vs past
+  // Counts for active vs past (respects selected room & type filters)
   const { activeCount, pastCount, totalCount } = useMemo(() => {
     let active = 0;
     let past = 0;
     for (const entry of lockedDates) {
+      if (filterRoomId !== "all" && entry.room_id !== filterRoomId) {
+        continue;
+      }
+      if (filterType !== "all") {
+        if (filterType === "manual" && entry.kind !== "manual") continue;
+        if (filterType === "booking" && entry.kind !== "booking") continue;
+        if (filterType === "ical" && entry.kind !== "ical") continue;
+      }
+
       const endNorm = entry.end_date ? entry.end_date.split("T")[0].trim() : "";
       if (endNorm >= todayStr) {
         active++;
@@ -321,9 +330,53 @@ export default function AdminCalendarPage() {
     return {
       activeCount: active,
       pastCount: past,
-      totalCount: lockedDates.length,
+      totalCount: active + past,
     };
-  }, [lockedDates, todayStr]);
+  }, [lockedDates, filterRoomId, filterType, todayStr]);
+
+  // Counts for type buttons (respects selected room & timeframe filters)
+  const typeCounts = useMemo(() => {
+    let all = 0;
+    let booking = 0;
+    let manual = 0;
+    let ical = 0;
+
+    for (const entry of lockedDates) {
+      if (filterRoomId !== "all" && entry.room_id !== filterRoomId) {
+        continue;
+      }
+      const endNorm = entry.end_date ? entry.end_date.split("T")[0].trim() : "";
+      if (filterTimeframe === "active" && endNorm < todayStr) continue;
+      if (filterTimeframe === "past" && endNorm >= todayStr) continue;
+
+      all++;
+      if (entry.kind === "booking") booking++;
+      else if (entry.kind === "manual") manual++;
+      else if (entry.kind === "ical") ical++;
+    }
+
+    return { all, booking, manual, ical };
+  }, [lockedDates, filterRoomId, filterTimeframe, todayStr]);
+
+  // Counts for room dropdown (respects selected timeframe & type filters)
+  const roomCounts = useMemo(() => {
+    const counts = new Map<string, number>();
+    let total = 0;
+    for (const entry of lockedDates) {
+      const endNorm = entry.end_date ? entry.end_date.split("T")[0].trim() : "";
+      if (filterTimeframe === "active" && endNorm < todayStr) continue;
+      if (filterTimeframe === "past" && endNorm >= todayStr) continue;
+      if (filterType !== "all") {
+        if (filterType === "manual" && entry.kind !== "manual") continue;
+        if (filterType === "booking" && entry.kind !== "booking") continue;
+        if (filterType === "ical" && entry.kind !== "ical") continue;
+      }
+
+      total++;
+      counts.set(entry.room_id, (counts.get(entry.room_id) || 0) + 1);
+    }
+    return { counts, total };
+  }, [lockedDates, filterTimeframe, filterType, todayStr]);
 
   const filteredLockedDates = useMemo(() => {
     return lockedDates.filter((entry) => {
@@ -1510,10 +1563,10 @@ export default function AdminCalendarPage() {
             </h3>
             <p style={{ margin: 0, fontSize: "0.85rem", color: "var(--text-secondary)" }}>
               {filterTimeframe === "active"
-                ? "Showing active bookings & upcoming blocks (guests yet to check out)."
+                ? `Showing active bookings & upcoming blocks${filterRoomId !== "all" ? ` for ${roomNameById.get(filterRoomId) || "selected room"}` : ""} (guests yet to check out).`
                 : filterTimeframe === "past"
-                ? "Showing past completed bookings and expired blocks."
-                : "Showing all locked dates (active, upcoming, and past history)."}
+                ? `Showing past completed bookings and expired blocks${filterRoomId !== "all" ? ` for ${roomNameById.get(filterRoomId) || "selected room"}` : ""}.`
+                : `Showing all locked dates${filterRoomId !== "all" ? ` for ${roomNameById.get(filterRoomId) || "selected room"}` : ""} (active, upcoming, and past history).`}
             </p>
           </div>
 
@@ -1574,6 +1627,7 @@ export default function AdminCalendarPage() {
                       filterTimeframe === "active"
                         ? "var(--primary)"
                         : "var(--text-muted)",
+                    fontWeight: "600",
                   }}
                 >
                   {activeCount}
@@ -1619,6 +1673,7 @@ export default function AdminCalendarPage() {
                       filterTimeframe === "past"
                         ? "#374151"
                         : "var(--text-muted)",
+                    fontWeight: "600",
                   }}
                 >
                   {pastCount}
@@ -1664,6 +1719,7 @@ export default function AdminCalendarPage() {
                       filterTimeframe === "all"
                         ? "var(--primary)"
                         : "var(--text-muted)",
+                    fontWeight: "600",
                   }}
                 >
                   {totalCount}
@@ -1675,10 +1731,10 @@ export default function AdminCalendarPage() {
             <div style={{ display: "flex", gap: "6px" }}>
               {(
                 [
-                  { value: "all", label: "All Types" },
-                  { value: "booking", label: "Bookings" },
-                  { value: "manual", label: "Manual" },
-                  { value: "ical", label: "Synced (OTA)" },
+                  { value: "all", label: "All Types", count: typeCounts.all },
+                  { value: "booking", label: "Bookings", count: typeCounts.booking },
+                  { value: "manual", label: "Manual", count: typeCounts.manual },
+                  { value: "ical", label: "Synced (OTA)", count: typeCounts.ical },
                 ] as const
               ).map((option) => (
                 <button
@@ -1704,9 +1760,30 @@ export default function AdminCalendarPage() {
                     fontSize: "0.8rem",
                     cursor: "pointer",
                     fontWeight: filterType === option.value ? "600" : "400",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "6px",
                   }}
                 >
-                  {option.label}
+                  <span>{option.label}</span>
+                  <span
+                    style={{
+                      fontSize: "0.75rem",
+                      padding: "1px 6px",
+                      borderRadius: "999px",
+                      backgroundColor:
+                        filterType === option.value
+                          ? "rgba(230, 74, 25, 0.15)"
+                          : "rgba(0,0,0,0.06)",
+                      color:
+                        filterType === option.value
+                          ? "var(--primary)"
+                          : "var(--text-muted)",
+                      fontWeight: "600",
+                    }}
+                  >
+                    {option.count}
+                  </span>
                 </button>
               ))}
             </div>
@@ -1721,12 +1798,13 @@ export default function AdminCalendarPage() {
                 border: "1px solid var(--border-color)",
                 fontSize: "0.85rem",
                 backgroundColor: "#FFFFFF",
+                fontWeight: filterRoomId !== "all" ? "600" : "400",
               }}
             >
-              <option value="all">All rooms</option>
+              <option value="all">All rooms ({roomCounts.total})</option>
               {rooms.map((room) => (
                 <option key={room.id} value={room.id}>
-                  {room.name}
+                  {room.name} ({roomCounts.counts.get(room.id) || 0})
                 </option>
               ))}
             </select>
@@ -1751,11 +1829,26 @@ export default function AdminCalendarPage() {
                 ? "No past completed records found"
                 : "No locked dates found"}
             </div>
-            <p style={{ margin: 0, fontSize: "0.875rem", maxWidth: "480px", marginInline: "auto" }}>
-              {filterTimeframe === "active"
+            <p style={{ margin: "0 0 16px 0", fontSize: "0.875rem", maxWidth: "480px", marginInline: "auto" }}>
+              {filterRoomId !== "all" || filterType !== "all"
+                ? `No dates match your selected filters (${filterRoomId !== "all" ? roomNameById.get(filterRoomId) : "All rooms"}${filterType !== "all" ? `, ${filterType}` : ""}).`
+                : filterTimeframe === "active"
                 ? "All rooms are currently open for new bookings. Active guest reservations and upcoming OTA blocks will appear here automatically."
                 : "Historical completed bookings and expired blocks will appear here."}
             </p>
+            {(filterRoomId !== "all" || filterType !== "all") && (
+              <button
+                type="button"
+                onClick={() => {
+                  setFilterRoomId("all");
+                  setFilterType("all");
+                }}
+                className="btn btn-outline"
+                style={{ padding: "6px 14px", fontSize: "0.8rem", marginInline: "auto" }}
+              >
+                Reset filters
+              </button>
+            )}
           </div>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
