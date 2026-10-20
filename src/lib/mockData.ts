@@ -7,6 +7,7 @@ import {
   PricingRule,
   Service,
   IcalSyncConfig,
+  GalleryPhoto,
 } from "./types";
 import { findBookingConflict } from "./availability";
 
@@ -399,6 +400,58 @@ export const DEFAULT_SERVICES: Service[] = [
   },
 ];
 
+export const DEFAULT_GALLERY_PHOTOS: GalleryPhoto[] = [
+  {
+    id: "ext-1",
+    src: "/images/Front New.jpeg",
+    title: "Agrawal House Entrance & Building",
+    category: "Exterior & Surroundings",
+    sort_order: 1,
+  },
+  {
+    id: "ext-2",
+    src: "/images/front.jpg",
+    title: "Entrance Archway",
+    category: "Exterior & Surroundings",
+    sort_order: 2,
+  },
+  {
+    id: "ext-3",
+    src: "/images/side-f.jpg",
+    title: "Balcony & Side Facade",
+    category: "Exterior & Surroundings",
+    sort_order: 3,
+  },
+  {
+    id: "ext-4",
+    src: "/images/side-h.jpg",
+    title: "Exterior Architecture",
+    category: "Exterior & Surroundings",
+    sort_order: 4,
+  },
+  {
+    id: "ext-5",
+    src: "/images/room_courtyard.jpg",
+    title: "Courtyard & Shared Spaces",
+    category: "Exterior & Surroundings",
+    sort_order: 5,
+  },
+  {
+    id: "ext-6",
+    src: "/images/hero_sunset.jpg",
+    title: "Ujjain Evening View",
+    category: "Exterior & Surroundings",
+    sort_order: 6,
+  },
+  {
+    id: "ext-7",
+    src: "/images/Mahakal.png",
+    title: "Shri Mahakaleshwar Temple (8 Mins Away)",
+    category: "Exterior & Surroundings",
+    sort_order: 7,
+  },
+];
+
 type MockDbState = {
   rooms: Room[];
   services: Service[];
@@ -408,6 +461,7 @@ type MockDbState = {
   settings: Settings;
   pricingRules: PricingRule[];
   icalSyncConfigs: IcalSyncConfig[];
+  galleryPhotos: GalleryPhoto[];
 };
 
 const STORAGE_KEYS = {
@@ -418,6 +472,7 @@ const STORAGE_KEYS = {
   enquiries: "ah_enquiries",
   settings: "ah_settings",
   icalSyncConfigs: "ah_ical_sync_configs",
+  galleryPhotos: "ah_gallery_photos",
 } as const;
 
 const createDefaultState = (): MockDbState => ({
@@ -429,6 +484,7 @@ const createDefaultState = (): MockDbState => ({
   settings: { ...DEFAULT_SETTINGS },
   pricingRules: [],
   icalSyncConfigs: [],
+  galleryPhotos: [...DEFAULT_GALLERY_PHOTOS],
 });
 
 // In-Memory state for Server Side rendering mock database
@@ -441,6 +497,7 @@ class MockDB {
   private settings: Settings = { ...DEFAULT_SETTINGS };
   private pricingRules: PricingRule[] = [];
   private icalSyncConfigs: IcalSyncConfig[] = [];
+  private galleryPhotos: GalleryPhoto[] = [...DEFAULT_GALLERY_PHOTOS];
 
   constructor() {
     const defaults = createDefaultState();
@@ -452,6 +509,7 @@ class MockDB {
     this.settings = defaults.settings;
     this.pricingRules = defaults.pricingRules;
     this.icalSyncConfigs = defaults.icalSyncConfigs;
+    this.galleryPhotos = defaults.galleryPhotos;
   }
 
   private isBrowser() {
@@ -468,6 +526,7 @@ class MockDB {
       settings: this.settings,
       pricingRules: this.pricingRules,
       icalSyncConfigs: this.icalSyncConfigs,
+      galleryPhotos: this.galleryPhotos,
     };
   }
 
@@ -480,6 +539,7 @@ class MockDB {
     this.settings = state.settings;
     this.pricingRules = state.pricingRules;
     this.icalSyncConfigs = state.icalSyncConfigs;
+    this.galleryPhotos = state.galleryPhotos ?? [...DEFAULT_GALLERY_PHOTOS];
   }
 
   private async loadState() {
@@ -535,6 +595,10 @@ class MockDB {
         this.icalSyncConfigs = storedIcalConfigs
           ? JSON.parse(storedIcalConfigs)
           : [];
+        const storedGalleryPhotos = localStorage.getItem(STORAGE_KEYS.galleryPhotos);
+        this.galleryPhotos = storedGalleryPhotos
+          ? JSON.parse(storedGalleryPhotos)
+          : [...DEFAULT_GALLERY_PHOTOS];
       } catch (e) {
         console.error("Error loading mock db from localStorage", e);
       }
@@ -564,6 +628,7 @@ class MockDB {
           settings: parsed.settings ?? { ...DEFAULT_SETTINGS },
           pricingRules: parsed.pricingRules ?? [],
           icalSyncConfigs: parsed.icalSyncConfigs ?? [],
+          galleryPhotos: parsed.galleryPhotos ?? [...DEFAULT_GALLERY_PHOTOS],
         });
         await this.saveState();
       } else {
@@ -576,6 +641,7 @@ class MockDB {
           settings: parsed.settings ?? { ...DEFAULT_SETTINGS },
           pricingRules: parsed.pricingRules ?? [],
           icalSyncConfigs: parsed.icalSyncConfigs ?? [],
+          galleryPhotos: parsed.galleryPhotos ?? [...DEFAULT_GALLERY_PHOTOS],
         });
       }
     } catch (e) {
@@ -615,6 +681,10 @@ class MockDB {
         localStorage.setItem(
           STORAGE_KEYS.icalSyncConfigs,
           JSON.stringify(this.icalSyncConfigs),
+        );
+        localStorage.setItem(
+          STORAGE_KEYS.galleryPhotos,
+          JSON.stringify(this.galleryPhotos),
         );
       } catch (e) {
         console.error("Error saving mock db to localStorage", e);
@@ -957,6 +1027,38 @@ class MockDB {
     this.blockedDates = this.blockedDates.filter(
       (b) => b.ical_config_id !== configId,
     );
+    await this.saveState();
+  }
+
+  // Gallery Photos
+  async getGalleryPhotos(): Promise<GalleryPhoto[]> {
+    await this.loadState();
+    return [...this.galleryPhotos].sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
+  }
+
+  async saveGalleryPhotos(photos: GalleryPhoto[]): Promise<GalleryPhoto[]> {
+    await this.loadState();
+    this.galleryPhotos = photos;
+    await this.saveState();
+    return this.galleryPhotos;
+  }
+
+  async addGalleryPhoto(photo: Omit<GalleryPhoto, "id">): Promise<GalleryPhoto> {
+    await this.loadState();
+    const newPhoto: GalleryPhoto = {
+      ...photo,
+      id: `photo-${Date.now()}-${Math.random().toString(36).substr(2, 7)}`,
+      sort_order: this.galleryPhotos.length + 1,
+      created_at: new Date().toISOString(),
+    };
+    this.galleryPhotos.unshift(newPhoto);
+    await this.saveState();
+    return newPhoto;
+  }
+
+  async deleteGalleryPhoto(id: string): Promise<void> {
+    await this.loadState();
+    this.galleryPhotos = this.galleryPhotos.filter((p) => p.id !== id);
     await this.saveState();
   }
 }

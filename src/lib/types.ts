@@ -144,3 +144,13 @@ export interface Settings {
     address: string;
   };
 }
+
+export interface GalleryPhoto {
+  id: string;
+  src: string;
+  title: string;
+  category: string;
+  sort_order?: number;
+  created_at?: string;
+}
+

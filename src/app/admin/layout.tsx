@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { adminAuth } from '@/lib/adminAuth';
-import { Calendar, CalendarRange, BedDouble, Inbox, Settings, LogOut, Home, Menu, X, Shield, Tag, Sparkles } from 'lucide-react';
+import { Calendar, CalendarRange, BedDouble, Inbox, Settings, LogOut, Home, Menu, X, Shield, Tag, Sparkles, Images } from 'lucide-react';
 
 export default function AdminLayout({
   children,
@@ -59,6 +59,7 @@ export default function AdminLayout({
     { name: 'Bookings', href: '/admin/bookings', icon: <Calendar size={18} /> },
     { name: 'Calendar', href: '/admin/calendar', icon: <CalendarRange size={18} /> },
     { name: 'Rooms', href: '/admin/rooms', icon: <BedDouble size={18} /> },
+    { name: 'Gallery', href: '/admin/gallery', icon: <Images size={18} /> },
     { name: 'Services', href: '/admin/services', icon: <Sparkles size={18} /> },
     { name: 'Pricing', href: '/admin/pricing', icon: <Tag size={18} /> },
     { name: 'Enquiries', href: '/admin/enquiries', icon: <Inbox size={18} /> },

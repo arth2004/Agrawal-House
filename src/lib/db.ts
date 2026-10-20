@@ -8,8 +8,9 @@ import {
   PricingRule,
   Service,
   IcalSyncConfig,
+  GalleryPhoto,
 } from "./types";
-import { mockDB, DEFAULT_ROOMS } from "./mockData";
+import { mockDB, DEFAULT_ROOMS, DEFAULT_GALLERY_PHOTOS } from "./mockData";
 import { findBookingConflict } from "./availability";
 
 type BookingWithRoomName = Booking & {
@@ -925,5 +926,92 @@ export const db = {
       }
     }
     return mockDB.deleteBlockedDatesByIcalConfig(configId);
+  },
+
+  // --- GALLERY PHOTOS ---
+  async getGalleryPhotos(): Promise<GalleryPhoto[]> {
+    // 1. Check browser localStorage for instant response
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("ah_gallery_photos");
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            return parsed;
+          }
+        } catch {}
+      }
+    }
+
+    // 2. Fetch from Supabase settings table if configured
+    if (supabase) {
+      try {
+        const { data, error } = await supabase
+          .from("settings")
+          .select("value")
+          .eq("key", "gallery_photos")
+          .maybeSingle();
+
+        if (!error && data?.value && Array.isArray(data.value) && data.value.length > 0) {
+          if (typeof window !== "undefined") {
+            localStorage.setItem("ah_gallery_photos", JSON.stringify(data.value));
+          }
+          return data.value as GalleryPhoto[];
+        }
+      } catch (err) {
+        console.warn("Could not fetch gallery photos from Supabase settings:", err);
+      }
+    }
+
+    // 3. Fallback to default mock photos
+    const defaults = await mockDB.getGalleryPhotos();
+    if (typeof window !== "undefined") {
+      localStorage.setItem("ah_gallery_photos", JSON.stringify(defaults));
+    }
+    return defaults;
+  },
+
+  async saveGalleryPhotos(photos: GalleryPhoto[]): Promise<GalleryPhoto[]> {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("ah_gallery_photos", JSON.stringify(photos));
+    }
+
+    if (supabase) {
+      try {
+        await supabase.from("settings").upsert({
+          key: "gallery_photos",
+          value: photos,
+          updated_at: new Date().toISOString(),
+        });
+      } catch (err) {
+        console.warn("Could not persist gallery photos to Supabase settings:", err);
+      }
+    }
+
+    await mockDB.saveGalleryPhotos(photos);
+    return photos;
+  },
+
+  async addGalleryPhoto(photo: Omit<GalleryPhoto, "id">): Promise<GalleryPhoto> {
+    const photos = await this.getGalleryPhotos();
+    const newPhoto: GalleryPhoto = {
+      ...photo,
+      id: `photo-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+      sort_order: photos.length + 1,
+      created_at: new Date().toISOString(),
+    };
+    const updated = [newPhoto, ...photos];
+    await this.saveGalleryPhotos(updated);
+    return newPhoto;
+  },
+
+  async deleteGalleryPhoto(id: string): Promise<void> {
+    const photos = await this.getGalleryPhotos();
+    const updated = photos.filter((p) => p.id !== id);
+    await this.saveGalleryPhotos(updated);
+  },
+
+  async uploadGalleryPhoto(file: File): Promise<string> {
+    return this.uploadRoomPhoto(file);
   },
 };

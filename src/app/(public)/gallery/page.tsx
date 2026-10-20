@@ -103,13 +103,43 @@ export default function GalleryPage() {
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [lightboxInitialIndex, setLightboxInitialIndex] = useState(0);
 
-  // Load any dynamic rooms & photos from db
+  // Load dynamic gallery photos & rooms from db
   useEffect(() => {
-    async function loadDynamicRooms() {
+    async function loadGalleryData() {
       try {
-        const rooms = await db.getRooms();
+        const [rooms, galleryPhotos] = await Promise.all([
+          db.getRooms(),
+          db.getGalleryPhotos(),
+        ]);
+
+        // 1. Process custom / managed gallery photos
+        let managedCats: GalleryCategory[] = [];
+        if (galleryPhotos && galleryPhotos.length > 0) {
+          const catMap = new Map<string, { src: string; title: string }[]>();
+          galleryPhotos.forEach((photo) => {
+            const cat = photo.category || "Exterior & Surroundings";
+            if (!catMap.has(cat)) {
+              catMap.set(cat, []);
+            }
+            catMap.get(cat)!.push({
+              src: photo.src,
+              title: photo.title || cat,
+            });
+          });
+
+          managedCats = Array.from(catMap.entries()).map(([cat, photos]) => ({
+            category: cat,
+            title: cat,
+            photos,
+          }));
+        } else {
+          managedCats = [DEFAULT_CATEGORIES[0]];
+        }
+
+        // 2. Process room categories
+        let dynamicRoomCats: GalleryCategory[] = [];
         if (rooms && rooms.length > 0) {
-          const dynamicCats: GalleryCategory[] = rooms.map((room) => ({
+          dynamicRoomCats = rooms.map((room) => ({
             category: room.name,
             title: room.name,
             photos:
@@ -120,14 +150,16 @@ export default function GalleryPage() {
                   }))
                 : [{ src: "/images/room_mango_suite.jpg", title: `${room.name}` }],
           }));
-
-          setCategories([DEFAULT_CATEGORIES[0], ...dynamicCats]);
+        } else {
+          dynamicRoomCats = DEFAULT_CATEGORIES.slice(1);
         }
+
+        setCategories([...managedCats, ...dynamicRoomCats]);
       } catch (err) {
-        console.error("Error loading gallery rooms:", err);
+        console.error("Error loading gallery data:", err);
       }
     }
-    loadDynamicRooms();
+    loadGalleryData();
   }, []);
 
   // Flatten all photos into a single master collection
