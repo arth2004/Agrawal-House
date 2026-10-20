@@ -31,7 +31,7 @@ export async function runIcalSync(options?: {
     roomId,
     clientProvidedConfigs,
     force = false,
-    staleThresholdMs = 10 * 60 * 1000, // 10 minutes default
+    staleThresholdMs = 2 * 60 * 1000, // 2 minutes default
   } = options || {};
 
   const lockKey = targetConfigId || roomId || "all";
@@ -259,7 +259,7 @@ export async function runIcalSync(options?: {
  * hasn't been synced in > staleMinutes (default: 10 min).
  * If stale, it fetches MakeMyTrip/Airbnb right then.
  */
-export async function syncIfStale(roomId?: string, staleMinutes = 10): Promise<void> {
+export async function syncIfStale(roomId?: string, staleMinutes = 2): Promise<void> {
   try {
     const configs = await db.getIcalSyncConfigs(roomId);
     const activeConfigs = configs.filter((c) => c.is_active);

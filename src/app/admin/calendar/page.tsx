@@ -85,6 +85,9 @@ export default function AdminCalendarPage() {
   const [filterType, setFilterType] = useState<
     "all" | "manual" | "booking" | "ical"
   >("all");
+  const [filterTimeframe, setFilterTimeframe] = useState<
+    "active" | "past" | "all"
+  >("active");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -97,6 +100,8 @@ export default function AdminCalendarPage() {
   // iCal Sync state
   const [syncConfigs, setSyncConfigs] = useState<IcalSyncConfig[]>([]);
   const [isSyncing, setIsSyncing] = useState(false);
+  const [isAutoSyncing, setIsAutoSyncing] = useState(false);
+  const [lastSyncStatus, setLastSyncStatus] = useState<string>("");
   const [syncMessage, setSyncMessage] = useState("");
   const [showAddSync, setShowAddSync] = useState(false);
   const [syncPlatform, setSyncPlatform] = useState("makemytrip");
@@ -128,6 +133,44 @@ export default function AdminCalendarPage() {
     return map;
   }, [rooms]);
 
+  const triggerBackgroundSync = async (configs: IcalSyncConfig[]) => {
+    const activeConfigs = configs.filter((c) => c.is_active);
+    if (activeConfigs.length === 0) return;
+
+    setIsAutoSyncing(true);
+    try {
+      const res = await fetch("/api/calendar/sync", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ configs }),
+      });
+      const data = await res.json();
+
+      // ALWAYS refresh from database regardless of data.success
+      // so any newly imported blocks immediately update the UI
+      const [refreshedBlocks, refreshedConfigs] = await Promise.all([
+        db.getBlockedDates(),
+        db.getIcalSyncConfigs(),
+      ]);
+      setBlockedDates(refreshedBlocks);
+      setSyncConfigs(refreshedConfigs);
+
+      if (data?.configs && Array.isArray(data.configs)) {
+        setSyncConfigs(data.configs);
+      }
+
+      const timeStr = new Date().toLocaleTimeString("en-IN", {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+      setLastSyncStatus(`Live in sync (${timeStr})`);
+    } catch (err) {
+      console.warn("Background auto-sync error:", err);
+    } finally {
+      setIsAutoSyncing(false);
+    }
+  };
+
   const fetchData = async () => {
     setLoading(true);
     try {
@@ -143,32 +186,29 @@ export default function AdminCalendarPage() {
       setBookings(bookingsData);
       setSyncConfigs(configsData);
 
-      // Just-in-Time Auto-Sync: if any feed hasn't been synced in >10 min, refresh in background
+      // Auto-Sync: if any active feed hasn't been synced in > 60 seconds (1 min) or never synced
       const now = Date.now();
       const hasStaleFeed = configsData.some(
         (c) =>
           c.is_active &&
           (!c.last_synced_at ||
-            now - new Date(c.last_synced_at).getTime() > 10 * 60 * 1000),
+            now - new Date(c.last_synced_at).getTime() > 60 * 1000),
       );
+
       if (hasStaleFeed) {
-        fetch("/api/calendar/sync", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ configs: configsData }),
-        })
-          .then((r) => r.json())
-          .then(async (data) => {
-            if (data?.success) {
-              const [refreshedBlocks, refreshedConfigs] = await Promise.all([
-                db.getBlockedDates(),
-                db.getIcalSyncConfigs(),
-              ]);
-              setBlockedDates(refreshedBlocks);
-              setSyncConfigs(refreshedConfigs);
-            }
-          })
-          .catch(() => {});
+        triggerBackgroundSync(configsData);
+      } else {
+        const latestSync = configsData
+          .filter((c) => c.is_active && c.last_synced_at)
+          .map((c) => new Date(c.last_synced_at!).getTime())
+          .sort((a, b) => b - a)[0];
+        if (latestSync) {
+          const timeStr = new Date(latestSync).toLocaleTimeString("en-IN", {
+            hour: "2-digit",
+            minute: "2-digit",
+          });
+          setLastSyncStatus(`Live in sync (${timeStr})`);
+        }
       }
     } catch (err) {
       console.error("Error fetching calendar data:", err);
@@ -182,6 +222,31 @@ export default function AdminCalendarPage() {
     fetchData();
   }, []);
 
+  // Listen to tab focus / visibility to ensure calendar stays live without manual refreshes
+  useEffect(() => {
+    const handleFocus = () => {
+      if (document.visibilityState === "visible") {
+        const now = Date.now();
+        const hasStale = syncConfigs.some(
+          (c) =>
+            c.is_active &&
+            (!c.last_synced_at ||
+              now - new Date(c.last_synced_at).getTime() > 60 * 1000),
+        );
+        if (hasStale && !isAutoSyncing && !isSyncing && syncConfigs.length > 0) {
+          triggerBackgroundSync(syncConfigs);
+        }
+      }
+    };
+
+    window.addEventListener("focus", handleFocus);
+    document.addEventListener("visibilitychange", handleFocus);
+    return () => {
+      window.removeEventListener("focus", handleFocus);
+      document.removeEventListener("visibilitychange", handleFocus);
+    };
+  }, [syncConfigs, isAutoSyncing, isSyncing]);
+
   useEffect(() => {
     if (!roomId && rooms.length > 0) {
       setRoomId(rooms[0].id);
@@ -190,6 +255,15 @@ export default function AdminCalendarPage() {
       setSyncRoomId(rooms[0].id);
     }
   }, [rooms, roomId, syncRoomId]);
+
+  // Today in YYYY-MM-DD
+  const todayStr = useMemo(() => {
+    const d = new Date();
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  }, []);
 
   const lockedDates = useMemo(() => {
     const manualEntries: LockedDateEntry[] = blockedDates
@@ -232,8 +306,37 @@ export default function AdminCalendarPage() {
     );
   }, [blockedDates, bookings]);
 
+  // Counts for active vs past
+  const { activeCount, pastCount, totalCount } = useMemo(() => {
+    let active = 0;
+    let past = 0;
+    for (const entry of lockedDates) {
+      const endNorm = entry.end_date ? entry.end_date.split("T")[0].trim() : "";
+      if (endNorm >= todayStr) {
+        active++;
+      } else {
+        past++;
+      }
+    }
+    return {
+      activeCount: active,
+      pastCount: past,
+      totalCount: lockedDates.length,
+    };
+  }, [lockedDates, todayStr]);
+
   const filteredLockedDates = useMemo(() => {
     return lockedDates.filter((entry) => {
+      const endNorm = entry.end_date ? entry.end_date.split("T")[0].trim() : "";
+
+      // Timeframe filter: default "active" hides all past completed bookings & blocks
+      if (filterTimeframe === "active" && endNorm < todayStr) {
+        return false;
+      }
+      if (filterTimeframe === "past" && endNorm >= todayStr) {
+        return false;
+      }
+
       const matchesRoom =
         filterRoomId === "all" || entry.room_id === filterRoomId;
       const matchesType =
@@ -243,7 +346,7 @@ export default function AdminCalendarPage() {
         (filterType === "ical" && entry.kind === "ical");
       return matchesRoom && matchesType;
     });
-  }, [lockedDates, filterRoomId, filterType]);
+  }, [lockedDates, filterTimeframe, filterRoomId, filterType, todayStr]);
 
   const resetForm = () => {
     setStartDate("");
@@ -480,6 +583,11 @@ export default function AdminCalendarPage() {
       }
 
       await fetchData();
+      const timeStr = new Date().toLocaleTimeString("en-IN", {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+      setLastSyncStatus(`Live in sync (${timeStr})`);
     } catch (err) {
       console.error(err);
       setError("Sync failed. Please check your internet connection and try again.");
@@ -805,11 +913,47 @@ export default function AdminCalendarPage() {
             </div>
           </div>
 
-          <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+          <div style={{ display: "flex", gap: "10px", alignItems: "center", flexWrap: "wrap" }}>
+            {isAutoSyncing && (
+              <div
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  padding: "7px 14px",
+                  borderRadius: "999px",
+                  backgroundColor: "rgba(230, 74, 25, 0.1)",
+                  color: "#E64A19",
+                  fontSize: "0.825rem",
+                  fontWeight: "600",
+                }}
+              >
+                <RefreshCw size={13} style={{ animation: "spin 1s linear infinite" }} />
+                <span>Auto-syncing feeds...</span>
+              </div>
+            )}
+            {!isAutoSyncing && lastSyncStatus && (
+              <div
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  padding: "7px 14px",
+                  borderRadius: "999px",
+                  backgroundColor: "rgba(16, 185, 129, 0.1)",
+                  color: "#065F46",
+                  fontSize: "0.825rem",
+                  fontWeight: "500",
+                }}
+              >
+                <Check size={14} />
+                <span>{lastSyncStatus}</span>
+              </div>
+            )}
             <button
               type="button"
               onClick={handleSyncNow}
-              disabled={isSyncing || syncConfigs.length === 0}
+              disabled={isSyncing || isAutoSyncing || syncConfigs.length === 0}
               className="btn btn-outline"
               style={{
                 display: "inline-flex",
@@ -820,7 +964,7 @@ export default function AdminCalendarPage() {
                 fontWeight: "600",
                 color: "var(--primary)",
                 borderColor: "var(--primary)",
-                cursor: isSyncing || syncConfigs.length === 0 ? "not-allowed" : "pointer",
+                cursor: isSyncing || isAutoSyncing || syncConfigs.length === 0 ? "not-allowed" : "pointer",
                 opacity: syncConfigs.length === 0 ? 0.6 : 1,
               }}
             >
@@ -1354,27 +1498,184 @@ export default function AdminCalendarPage() {
           style={{
             display: "flex",
             justifyContent: "space-between",
-            alignItems: "center",
+            alignItems: "flex-start",
             flexWrap: "wrap",
             gap: "16px",
             marginBottom: "24px",
           }}
         >
-          <h3 style={{ fontSize: "1.15rem", margin: 0 }}>
-            Locked Dates ({filteredLockedDates.length})
-          </h3>
+          <div>
+            <h3 style={{ fontSize: "1.25rem", margin: "0 0 4px 0", fontWeight: "600" }}>
+              Locked Dates ({filteredLockedDates.length})
+            </h3>
+            <p style={{ margin: 0, fontSize: "0.85rem", color: "var(--text-secondary)" }}>
+              {filterTimeframe === "active"
+                ? "Showing active bookings & upcoming blocks (guests yet to check out)."
+                : filterTimeframe === "past"
+                ? "Showing past completed bookings and expired blocks."
+                : "Showing all locked dates (active, upcoming, and past history)."}
+            </p>
+          </div>
+
           <div
             style={{
               display: "flex",
               flexWrap: "wrap",
-              gap: "8px",
+              gap: "12px",
               alignItems: "center",
             }}
           >
+            {/* Timeframe Filter Tabs */}
+            <div
+              style={{
+                display: "inline-flex",
+                backgroundColor: "#F3F4F6",
+                padding: "3px",
+                borderRadius: "var(--radius-sm)",
+                gap: "2px",
+              }}
+            >
+              <button
+                type="button"
+                onClick={() => setFilterTimeframe("active")}
+                style={{
+                  padding: "6px 12px",
+                  borderRadius: "calc(var(--radius-sm) - 2px)",
+                  border: "none",
+                  backgroundColor:
+                    filterTimeframe === "active" ? "#FFFFFF" : "transparent",
+                  color:
+                    filterTimeframe === "active"
+                      ? "var(--primary)"
+                      : "var(--text-secondary)",
+                  fontSize: "0.825rem",
+                  fontWeight: filterTimeframe === "active" ? "700" : "500",
+                  cursor: "pointer",
+                  boxShadow:
+                    filterTimeframe === "active"
+                      ? "0 1px 3px rgba(0,0,0,0.1)"
+                      : "none",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
+                }}
+              >
+                <span>Active &amp; Upcoming</span>
+                <span
+                  style={{
+                    fontSize: "0.75rem",
+                    padding: "1px 6px",
+                    borderRadius: "999px",
+                    backgroundColor:
+                      filterTimeframe === "active"
+                        ? "var(--primary-light)"
+                        : "rgba(0,0,0,0.06)",
+                    color:
+                      filterTimeframe === "active"
+                        ? "var(--primary)"
+                        : "var(--text-muted)",
+                  }}
+                >
+                  {activeCount}
+                </span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setFilterTimeframe("past")}
+                style={{
+                  padding: "6px 12px",
+                  borderRadius: "calc(var(--radius-sm) - 2px)",
+                  border: "none",
+                  backgroundColor:
+                    filterTimeframe === "past" ? "#FFFFFF" : "transparent",
+                  color:
+                    filterTimeframe === "past"
+                      ? "var(--primary)"
+                      : "var(--text-secondary)",
+                  fontSize: "0.825rem",
+                  fontWeight: filterTimeframe === "past" ? "700" : "500",
+                  cursor: "pointer",
+                  boxShadow:
+                    filterTimeframe === "past"
+                      ? "0 1px 3px rgba(0,0,0,0.1)"
+                      : "none",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
+                }}
+              >
+                <span>Past Completed</span>
+                <span
+                  style={{
+                    fontSize: "0.75rem",
+                    padding: "1px 6px",
+                    borderRadius: "999px",
+                    backgroundColor:
+                      filterTimeframe === "past"
+                        ? "rgba(107, 114, 128, 0.15)"
+                        : "rgba(0,0,0,0.06)",
+                    color:
+                      filterTimeframe === "past"
+                        ? "#374151"
+                        : "var(--text-muted)",
+                  }}
+                >
+                  {pastCount}
+                </span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setFilterTimeframe("all")}
+                style={{
+                  padding: "6px 12px",
+                  borderRadius: "calc(var(--radius-sm) - 2px)",
+                  border: "none",
+                  backgroundColor:
+                    filterTimeframe === "all" ? "#FFFFFF" : "transparent",
+                  color:
+                    filterTimeframe === "all"
+                      ? "var(--primary)"
+                      : "var(--text-secondary)",
+                  fontSize: "0.825rem",
+                  fontWeight: filterTimeframe === "all" ? "700" : "500",
+                  cursor: "pointer",
+                  boxShadow:
+                    filterTimeframe === "all"
+                      ? "0 1px 3px rgba(0,0,0,0.1)"
+                      : "none",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
+                }}
+              >
+                <span>All History</span>
+                <span
+                  style={{
+                    fontSize: "0.75rem",
+                    padding: "1px 6px",
+                    borderRadius: "999px",
+                    backgroundColor:
+                      filterTimeframe === "all"
+                        ? "var(--primary-light)"
+                        : "rgba(0,0,0,0.06)",
+                    color:
+                      filterTimeframe === "all"
+                        ? "var(--primary)"
+                        : "var(--text-muted)",
+                  }}
+                >
+                  {totalCount}
+                </span>
+              </button>
+            </div>
+
+            {/* Type Filter Buttons */}
             <div style={{ display: "flex", gap: "6px" }}>
               {(
                 [
-                  { value: "all", label: "All" },
+                  { value: "all", label: "All Types" },
                   { value: "booking", label: "Bookings" },
                   { value: "manual", label: "Manual" },
                   { value: "ical", label: "Synced (OTA)" },
@@ -1409,6 +1710,8 @@ export default function AdminCalendarPage() {
                 </button>
               ))}
             </div>
+
+            {/* Room Filter Dropdown */}
             <select
               value={filterRoomId}
               onChange={(e) => setFilterRoomId(e.target.value)}
@@ -1434,17 +1737,25 @@ export default function AdminCalendarPage() {
           <div
             style={{
               textAlign: "center",
-              padding: "40px 24px",
+              padding: "48px 24px",
               color: "var(--text-muted)",
               border: "1px dashed var(--border-color)",
               borderRadius: "var(--radius-md)",
+              backgroundColor: "#FAFAFA",
             }}
           >
-            No locked dates
-            {filterRoomId !== "all" || filterType !== "all"
-              ? " matching these filters"
-              : " right now"}
-            . Active bookings and manual blocks will appear here automatically.
+            <div style={{ fontSize: "1.1rem", fontWeight: "600", color: "var(--text-primary)", marginBottom: "6px" }}>
+              {filterTimeframe === "active"
+                ? "No active or upcoming locked dates"
+                : filterTimeframe === "past"
+                ? "No past completed records found"
+                : "No locked dates found"}
+            </div>
+            <p style={{ margin: 0, fontSize: "0.875rem", maxWidth: "480px", marginInline: "auto" }}>
+              {filterTimeframe === "active"
+                ? "All rooms are currently open for new bookings. Active guest reservations and upcoming OTA blocks will appear here automatically."
+                : "Historical completed bookings and expired blocks will appear here."}
+            </p>
           </div>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
@@ -1459,6 +1770,81 @@ export default function AdminCalendarPage() {
                     PLATFORM_LABELS.other
                   : undefined;
 
+              const startNorm = entry.start_date ? entry.start_date.split("T")[0].trim() : "";
+              const endNorm = entry.end_date ? entry.end_date.split("T")[0].trim() : "";
+
+              const isPast = endNorm < todayStr;
+              const isDepartingToday = endNorm === todayStr;
+              const isCurrentlyInHouse = startNorm <= todayStr && endNorm >= todayStr;
+
+              // Compute Badge Label and Colors
+              let badgeText = "";
+              let badgeBg = "";
+              let badgeColor = "";
+              let borderAccentColor = "var(--primary)";
+
+              if (isPast) {
+                borderAccentColor = "#D1D5DB";
+                badgeBg = "rgba(107, 114, 128, 0.12)";
+                badgeColor = "#4B5563";
+                if (entry.kind === "booking") {
+                  badgeText = "Completed Stay · Checked Out";
+                } else if (entry.kind === "ical") {
+                  badgeText = `Past Stay · ${platformMeta?.label || "OTA"}`;
+                } else {
+                  badgeText = "Expired Manual Block";
+                }
+              } else if (isDepartingToday) {
+                borderAccentColor = "#F59E0B";
+                badgeBg = "rgba(245, 158, 11, 0.18)";
+                badgeColor = "#B45309";
+                if (entry.kind === "booking") {
+                  badgeText = "Departing Today · Yet to Check Out";
+                } else if (entry.kind === "ical") {
+                  badgeText = `Departing Today · ${platformMeta?.label || "OTA"}`;
+                } else {
+                  badgeText = "Ends Today · Manual Block";
+                }
+              } else if (isCurrentlyInHouse) {
+                if (entry.kind === "booking") {
+                  borderAccentColor = "#10B981";
+                  badgeBg = "rgba(16, 185, 129, 0.18)";
+                  badgeColor = "#047857";
+                  badgeText = "Active Stay · In House";
+                } else if (entry.kind === "ical") {
+                  borderAccentColor = platformMeta?.color || "#E64A19";
+                  badgeBg = platformMeta?.bg || "rgba(230, 74, 25, 0.15)";
+                  badgeColor = platformMeta?.color || "#E64A19";
+                  badgeText = `In House · ${platformMeta?.label || "OTA"}`;
+                } else {
+                  borderAccentColor = "var(--primary)";
+                  badgeBg = "var(--primary-light)";
+                  badgeColor = "var(--primary)";
+                  badgeText = "Active Manual Block";
+                }
+              } else {
+                // Upcoming
+                if (entry.kind === "booking") {
+                  borderAccentColor = "var(--accent)";
+                  badgeBg = "rgba(245, 158, 11, 0.15)";
+                  badgeColor = "var(--accent)";
+                  badgeText =
+                    entry.status === "pending"
+                      ? "Upcoming · Pending Booking"
+                      : "Upcoming · Confirmed Booking";
+                } else if (entry.kind === "ical") {
+                  borderAccentColor = platformMeta?.color || "#E64A19";
+                  badgeBg = platformMeta?.bg || "rgba(230, 74, 25, 0.1)";
+                  badgeColor = platformMeta?.color || "#E64A19";
+                  badgeText = `Upcoming · ${platformMeta?.label || "OTA"}`;
+                } else {
+                  borderAccentColor = "var(--primary)";
+                  badgeBg = "var(--primary-light)";
+                  badgeColor = "var(--primary)";
+                  badgeText = "Upcoming Manual Block";
+                }
+              }
+
               return (
                 <div
                   key={`${entry.kind}-${entry.id}`}
@@ -1470,13 +1856,10 @@ export default function AdminCalendarPage() {
                     padding: "16px 20px",
                     border: "1px solid var(--border-color)",
                     borderRadius: "var(--radius-md)",
+                    backgroundColor: isPast ? "#FAFAFA" : "#FFFFFF",
                     flexWrap: "wrap",
-                    borderLeft:
-                      entry.kind === "booking"
-                        ? "4px solid var(--accent)"
-                        : entry.kind === "ical"
-                        ? `4px solid ${platformMeta?.color || "#E64A19"}`
-                        : "4px solid var(--primary)",
+                    borderLeft: `4px solid ${borderAccentColor}`,
+                    opacity: isPast ? 0.85 : 1,
                   }}
                 >
                   <div
@@ -1498,27 +1881,11 @@ export default function AdminCalendarPage() {
                           letterSpacing: "0.05em",
                           padding: "3px 8px",
                           borderRadius: "999px",
-                          backgroundColor:
-                            entry.kind === "booking"
-                              ? "rgba(245, 158, 11, 0.15)"
-                              : entry.kind === "ical"
-                              ? platformMeta?.bg || "rgba(230, 74, 25, 0.1)"
-                              : "var(--primary-light)",
-                          color:
-                            entry.kind === "booking"
-                              ? "var(--accent)"
-                              : entry.kind === "ical"
-                              ? platformMeta?.color || "#E64A19"
-                              : "var(--primary)",
+                          backgroundColor: badgeBg,
+                          color: badgeColor,
                         }}
                       >
-                        {entry.kind === "booking"
-                          ? entry.status === "pending"
-                            ? "Booking · Pending"
-                            : "Booking · Confirmed"
-                          : entry.kind === "ical"
-                          ? `Synced · ${platformMeta?.label || "OTA"}`
-                          : "Manual block"}
+                        {badgeText}
                       </span>
                       <div
                         style={{
@@ -1588,8 +1955,8 @@ export default function AdminCalendarPage() {
                     style={{
                       padding: "8px 14px",
                       fontSize: "0.8rem",
-                      color: "#EF4444",
-                      borderColor: "#FCA5A5",
+                      color: isPast ? "var(--text-secondary)" : "#EF4444",
+                      borderColor: isPast ? "var(--border-color)" : "#FCA5A5",
                       display: "inline-flex",
                       alignItems: "center",
                       gap: "6px",
@@ -1597,10 +1964,10 @@ export default function AdminCalendarPage() {
                   >
                     <Unlock size={14} />
                     {entry.kind === "manual"
-                      ? "Unblock"
+                      ? isPast ? "Remove past block" : "Unblock"
                       : entry.kind === "booking"
-                      ? "Cancel booking"
-                      : "Remove block"}
+                      ? isPast ? "Archive record" : "Cancel booking"
+                      : isPast ? "Remove past block" : "Remove block"}
                   </button>
                 </div>
               );

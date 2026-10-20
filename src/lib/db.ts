@@ -304,7 +304,7 @@ export const db = {
     if (typeof window === "undefined") {
       try {
         const { syncIfStale } = await import("@/lib/syncService");
-        await syncIfStale(roomId, 10);
+        await syncIfStale(roomId, 2);
       } catch {
         // Non-blocking fallback
       }
